@@ -19,9 +19,11 @@ export default defineConfig({
   },
   envDir: path.resolve(import.meta.dirname),
   root: path.resolve(import.meta.dirname, "client"),
+  base: "/", // GitHub Pages root
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, "docs"),
     emptyOutDir: true,
+    copyPublicDir: true,
   },
   server: {
     port: 3000,
