@@ -1,0 +1,112 @@
+{
+  "sources": [
+    {
+      "name": "Verizon Data Breach Investigations Report 2024",
+      "abbreviation": "DBIR 2024",
+      "url": "https://www.verizon.com/business/resources/reports/2024-dbir-data-breach-investigations-report.pdf",
+      "year": 2024
+    },
+    {
+      "name": "IBM Cost of Data Breach Report 2024",
+      "abbreviation": "IBM 2024",
+      "url": "https://www.ibm.com/reports/data-breach",
+      "year": 2024
+    },
+    {
+      "name": "Varonis Ransomware Statistics 2024",
+      "abbreviation": "Varonis 2024",
+      "url": "https://www.varonis.com/blog/ransomware-statistics",
+      "year": 2024
+    }
+  ],
+  "industryBenchmarks": {
+    "ransomwareFrequency": {
+      "value": 0.66,
+      "description": "66% of organizations experienced ransomware attack in 2024",
+      "source": "Varonis 2024"
+    },
+    "averageRansom": {
+      "value": 2730000,
+      "description": "Average ransom demand in 2024: $2.73M",
+      "source": "Varonis 2024"
+    },
+    "healthcareBreachCost": {
+      "value": 9770000,
+      "description": "Average healthcare data breach cost: $9.77M",
+      "source": "IBM 2024"
+    },
+    "globalBreachCost": {
+      "value": 4880000,
+      "description": "Global average data breach cost: $4.88M",
+      "source": "IBM 2024"
+    },
+    "stolenCredentials": {
+      "value": 0.24,
+      "description": "24% of breaches involved stolen credentials as initial action",
+      "source": "DBIR 2024"
+    },
+    "ransomwareSystemIntrusion": {
+      "value": 0.75,
+      "description": "75% of system intrusion breaches involved ransomware",
+      "source": "DBIR 2024"
+    },
+    "averageDowntime": {
+      "value": 24,
+      "description": "Average ransomware downtime: 24 days",
+      "source": "Varonis 2024"
+    },
+    "phishingSuccess": {
+      "value": 0.03,
+      "description": "Average phishing success rate: 3%",
+      "source": "DBIR 2024"
+    },
+    "mfaBypass": {
+      "value": 0.14,
+      "description": "14% of breaches involved MFA bypass",
+      "source": "DBIR 2024"
+    },
+    "cloudMisconfiguration": {
+      "value": 0.19,
+      "description": "19% of breaches due to cloud misconfigurations",
+      "source": "DBIR 2024"
+    },
+    "meanTimeToDetect": {
+      "value": 204,
+      "description": "Average time to identify breach: 204 days",
+      "source": "IBM 2024"
+    },
+    "meanTimeToContain": {
+      "value": 73,
+      "description": "Average time to contain breach: 73 days",
+      "source": "IBM 2024"
+    }
+  },
+  "threatActorCapabilities": {
+    "sophisticatedGroups": {
+      "phishing": 0.85,
+      "credentialTheft": 0.80,
+      "cloudExploitation": 0.75,
+      "ransomware": 0.70,
+      "dataExfiltration": 0.80,
+      "antiForensics": 0.65,
+      "source": "DBIR 2024 - Advanced Persistent Threat analysis"
+    }
+  },
+  "controlEffectiveness": {
+    "mfaReduction": {
+      "value": 0.99,
+      "description": "MFA reduces breach risk by 99%",
+      "source": "Industry consensus"
+    },
+    "securityAwareness": {
+      "value": 0.70,
+      "description": "Security awareness training reduces phishing success by 70%",
+      "source": "Industry consensus"
+    },
+    "backupRecovery": {
+      "value": 0.85,
+      "description": "85% recovery success rate with proper backups",
+      "source": "Varonis 2024"
+    }
+  }
+}

@@ -1,0 +1,291 @@
+{
+  "scenario": {
+    "name": "Iron Vortex Ransomware Attack on Hyperion Genomics",
+    "asset": "HeliosAI Platform and Genomic Databases",
+    "threatActor": "Iron Vortex (Russian Cybercriminal Group)",
+    "timeframe": "12 months",
+    "analysisDate": "2025-11-07",
+    "assetValue": 2400000000,
+    "recordsAtRisk": 130000000,
+    "dataVolume": "Multi-petabyte (>1 PB per region)",
+    "regions": 15
+  },
+  "threatEventFrequency": {
+    "min": 0.4,
+    "mostLikely": 3.85,
+    "max": 10.8,
+    "unit": "events/year",
+    "description": "Number of times Iron Vortex will attempt to attack Hyperion per year",
+    "components": {
+      "contactFrequency": {
+        "min": 1,
+        "mostLikely": 5.5,
+        "max": 12,
+        "description": "Campaigns per year"
+      },
+      "probabilityOfAction": {
+        "min": 0.40,
+        "mostLikely": 0.70,
+        "max": 0.90,
+        "description": "Probability of targeting Hyperion"
+      }
+    }
+  },
+  "susceptibility": {
+    "min": 0.15,
+    "mostLikely": 0.30,
+    "max": 0.50,
+    "unit": "probability",
+    "description": "Probability of successful compromise per threat event",
+    "threatCapability": {
+      "overall": 0.80,
+      "spearPhishing": 0.90,
+      "credentialTheft": 0.80,
+      "awsExploitation": 0.80,
+      "ransomware": 0.70,
+      "dataExfiltration": 0.80,
+      "antiForensics": 0.70
+    },
+    "resistanceStrength": {
+      "min": 0.50,
+      "mostLikely": 0.70,
+      "max": 0.85,
+      "preventive": 0.55,
+      "detective": 0.60,
+      "responsive": 0.78
+    }
+  },
+  "lossEventFrequency": {
+    "min": 0.06,
+    "mostLikely": 1.16,
+    "max": 5.4,
+    "unit": "events/year",
+    "description": "Expected successful attacks per year",
+    "interpretation": "Approximately 1 successful attack per year"
+  },
+  "lossMagnitude": {
+    "primary": {
+      "min": 748000000,
+      "mostLikely": 1322000000,
+      "max": 2109000000,
+      "unit": "USD",
+      "components": {
+        "productivity": {
+          "min": 10000000,
+          "mostLikely": 50000000,
+          "max": 120000000,
+          "description": "Business interruption from platform outage"
+        },
+        "response": {
+          "min": 7000000,
+          "mostLikely": 12000000,
+          "max": 18000000,
+          "description": "Incident response, forensics, legal, PR"
+        },
+        "replacement": {
+          "min": 8000000,
+          "mostLikely": 15000000,
+          "max": 26000000,
+          "description": "System rebuild and data restoration"
+        },
+        "finesJudgments": {
+          "min": 536000000,
+          "mostLikely": 870000000,
+          "max": 1300000000,
+          "description": "Regulatory penalties, litigation, notifications, credit monitoring"
+        },
+        "competitiveAdvantage": {
+          "min": 10000000,
+          "mostLikely": 25000000,
+          "max": 50000000,
+          "description": "IP theft and competitive disadvantage"
+        },
+        "reputation": {
+          "min": 177000000,
+          "mostLikely": 350000000,
+          "max": 595000000,
+          "description": "Year 1 customer churn"
+        }
+      }
+    },
+    "secondary": {
+      "min": 273000000,
+      "mostLikely": 425000000,
+      "max": 650000000,
+      "unit": "USD",
+      "components": {
+        "responseCost": {
+          "min": 30000000,
+          "mostLikely": 50000000,
+          "max": 80000000,
+          "description": "Secondary response costs (post-breach security improvements, enhanced monitoring)"
+        },
+        "competitiveAdvantageLoss": {
+          "min": 45000000,
+          "mostLikely": 75000000,
+          "max": 120000000,
+          "description": "Lost partnerships, R&D delays, market share erosion"
+        },
+        "finesJudgments": {
+          "min": 30000000,
+          "mostLikely": 60000000,
+          "max": 90000000,
+          "description": "Insurance premium increases, civil litigation settlements"
+        },
+        "reputationDamage": {
+          "min": 168000000,
+          "mostLikely": 240000000,
+          "max": 360000000,
+          "description": "Customer attrition, brand damage, stock price impact (Years 2-3)"
+        }
+      }
+    },
+    "total": {
+      "min": 1021000000,
+      "mostLikely": 1747000000,
+      "max": 2759000000,
+      "unit": "USD"
+    }
+  },
+  "annualizedLossExpectancy": {
+    "min": 61000000,
+    "mostLikely": 2026000000,
+    "max": 14899000000,
+    "unit": "USD/year",
+    "description": "Expected annual loss from this risk",
+    "singleLossExpectancy": {
+      "min": 1021000000,
+      "mostLikely": 1747000000,
+      "max": 2759000000,
+      "description": "Loss per event"
+    }
+  },
+  "riskTreatment": {
+    "immediate": {
+      "investment": 1100000,
+      "aleReduction": 585000000,
+      "roi": 531,
+      "actions": [
+        "Deploy phishing-resistant MFA (FIDO2) for privileged accounts",
+        "Enhanced security awareness training with vishing simulations",
+        "Tighten cross-region IAM policies",
+        "Restrict TestSure vendor access"
+      ]
+    },
+    "shortTerm": {
+      "investment": 7500000,
+      "aleReduction": 292500000,
+      "roi": 39,
+      "actions": [
+        "Multi-region recovery testing and enhancement",
+        "Backup immutability hardening",
+        "Enhanced detection and response (UEBA)",
+        "Increase cyber insurance coverage"
+      ]
+    },
+    "longTerm": {
+      "investment": 21500000,
+      "aleReduction": 450000000,
+      "roi": 21,
+      "actions": [
+        "Zero-trust architecture implementation",
+        "Data minimization and anonymization",
+        "Vendor ecosystem hardening"
+      ]
+    },
+    "totalProgram": {
+      "investment": 30100000,
+      "aleReduction": 1327500000,
+      "roi": 44,
+      "residualALE": 766500000
+    }
+  },
+  "controlAssessment": {
+    "preventive": [
+      {
+        "control": "MFA Enforcement",
+        "coverage": "97% console, 85% API",
+        "effectiveness": 0.60,
+        "gaps": "Legacy service accounts, TOTP vulnerable to bypass"
+      },
+      {
+        "control": "IAM Least Privilege",
+        "coverage": "80-90%",
+        "effectiveness": 0.70,
+        "gaps": "18 overly permissive roles, cross-region admin accounts"
+      },
+      {
+        "control": "Security Awareness",
+        "coverage": "All employees",
+        "effectiveness": 0.30,
+        "gaps": "5 years outdated, no vishing training"
+      },
+      {
+        "control": "Network Segmentation",
+        "coverage": "7/10 rating",
+        "effectiveness": 0.70,
+        "gaps": "Cross-region IAM allows lateral movement"
+      }
+    ],
+    "detective": [
+      {
+        "control": "SIEM/Logging",
+        "coverage": "95% events",
+        "effectiveness": 0.60,
+        "gaps": "Weak on low-and-slow exfiltration"
+      },
+      {
+        "control": "Anomaly Detection",
+        "coverage": "Continuous",
+        "effectiveness": 0.65,
+        "gaps": "No DBA behavioral analytics"
+      },
+      {
+        "control": "Mean Time to Detect",
+        "value": "2-3 days",
+        "effectiveness": 0.50,
+        "gaps": "Red team persisted 9 days undetected"
+      }
+    ],
+    "responsive": [
+      {
+        "control": "Incident Response Plan",
+        "coverage": "AWS-specific playbooks",
+        "effectiveness": 0.75,
+        "gaps": "Infrequent tabletop exercises"
+      },
+      {
+        "control": "Backup & Recovery",
+        "coverage": "Daily snapshots",
+        "effectiveness": 0.85,
+        "gaps": "Multi-region restoration untested at scale"
+      },
+      {
+        "control": "Backup Immutability",
+        "coverage": "Partial",
+        "effectiveness": 0.70,
+        "gaps": "Admin could delete non-immutable backups"
+      }
+    ]
+  },
+  "monteCarloSimulation": {
+    "iterations": 10000,
+    "percentiles": {
+      "p10": {
+        "lef": 0.12,
+        "lossMagnitude": 1100000000,
+        "ale": 132000000
+      },
+      "p50": {
+        "lef": 1.2,
+        "lossMagnitude": 1745000000,
+        "ale": 2094000000
+      },
+      "p90": {
+        "lef": 4.5,
+        "lossMagnitude": 2600000000,
+        "ale": 11700000000
+      }
+    }
+  }
+}
