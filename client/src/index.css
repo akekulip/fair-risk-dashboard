@@ -10,70 +10,6 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
 
-  /* Custom Scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--background));
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-
-  /* Print Styles */
-  @media print {
-    body {
-      background: white !important;
-      color: black !important;
-    }
-
-    .no-print {
-      display: none !important;
-    }
-
-    /* Hide navigation and interactive elements */
-    nav,
-    button,
-    [role="tablist"],
-    .fixed {
-      display: none !important;
-    }
-
-    /* Ensure charts and content are visible */
-    canvas,
-    svg {
-      break-inside: avoid;
-    }
-
-    .card {
-      border: 1px solid #ddd !important;
-      box-shadow: none !important;
-      break-inside: avoid;
-      margin-bottom: 20px;
-    }
-
-    /* Reset layout for print */
-    .grid {
-      display: block !important;
-    }
-
-    .col-span-1,
-    .col-span-2,
-    .col-span-3,
-    .col-span-4 {
-      width: 100% !important;
-    }
-  }
-
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
@@ -102,6 +38,70 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Print Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Hide navigation and interactive elements */
+  nav,
+  button,
+  [role="tablist"],
+  .fixed {
+    display: none !important;
+  }
+
+  /* Ensure charts and content are visible */
+  canvas,
+  svg {
+    break-inside: avoid;
+  }
+
+  .card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-bottom: 20px;
+  }
+
+  /* Reset layout for print */
+  .grid {
+    display: block !important;
+  }
+
+  .col-span-1,
+  .col-span-2,
+  .col-span-3,
+  .col-span-4 {
+    width: 100% !important;
+  }
 }
 
 :root {
