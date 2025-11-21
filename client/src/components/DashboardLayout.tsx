@@ -19,13 +19,13 @@ export default function DashboardLayout({ children, activeTab = 'summary', onTab
   const { exportToPDF } = useExport();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-[hsl(var(--primary)/0.05)]">
       {/* Header */}
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 no-print">
+      <header className="border-b border-[hsl(var(--border)/0.4)] bg-[hsl(var(--background)/0.95)] backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background)/0.6)] sticky top-0 z-50 no-print">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
+              <div className="p-2 rounded-lg bg-[hsl(var(--primary)/0.1)]">
                 <Shield className="h-6 w-6 text-primary" />
               </div>
               <div>

@@ -39,8 +39,8 @@ export default defineConfig({
       "127.0.0.1",
     ],
     fs: {
-      strict: true,
-      deny: ["**/.*"],
-    },
+      strict: false,
+      deny: [],
+    }
   },
 });

@@ -155,7 +155,7 @@ export default function SummaryTab() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Risk Level Banner */}
-      <Card className="border-2 border-red-500/50 bg-red-500/5">
+      <Card className="border-2" style={{ borderColor: 'hsla(0, 84.2%, 60.2%, 0.5)', backgroundColor: 'hsla(0, 84.2%, 60.2%, 0.05)' }}>
         <CardHeader>
           <div className="flex items-center gap-3">
             <motion.div
@@ -347,7 +347,7 @@ export default function SummaryTab() {
       </Card>
 
       {/* Recommendations Summary */}
-      <Card className="border-green-500/50 bg-green-500/5">
+      <Card style={{ borderColor: 'hsla(142.1, 76.2%, 36.3%, 0.5)', backgroundColor: 'hsla(142.1, 76.2%, 36.3%, 0.05)' }}>
         <CardHeader>
           <CardTitle className="text-green-600 dark:text-green-400">Immediate Action Required</CardTitle>
           <CardDescription>Priority risk treatment recommendations</CardDescription>

@@ -28,6 +28,7 @@ export const useExport = () => {
       pdf.save(`${fileName}.pdf`);
     } catch (error) {
       console.error('Error exporting to PDF:', error);
+      alert('PDF Export Failed: The current browser environment or styling (Tailwind v4 oklch colors) is not fully compatible with the PDF generation library. Please try again later or use a different browser.');
     }
   }, []);
 
