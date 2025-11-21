@@ -364,12 +364,12 @@ export default function FAIRModelTab() {
   };
 
   // Workbook-style component box
-  const WorkbookBox = ({ 
-    component, 
+  const WorkbookBox = ({
+    component,
     delay = 0,
     size = 'md'
-  }: { 
-    component: ComponentData; 
+  }: {
+    component: ComponentData;
     delay?: number;
     size?: 'sm' | 'md' | 'lg' | 'xl';
   }) => {
@@ -391,16 +391,16 @@ export default function FAIRModelTab() {
 
     return (
       <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ delay, duration: 0.5, type: "spring", stiffness: 100 }}
-        whileHover={{ scale: 1.03, boxShadow: "0 10px 40px rgba(0,0,0,0.3)" }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay, duration: 0.4, ease: "easeOut" }}
+        whileHover={{ y: -2 }}
         onHoverStart={() => setHoveredId(component.id)}
         onHoverEnd={() => setHoveredId(null)}
         onClick={() => handleClick(component)}
         className="cursor-pointer"
       >
-        <Card className={`${component.color} border-2 ${component.borderColor} relative overflow-hidden transition-all duration-300`}>
+        <Card className={`${component.color} border-2 ${component.borderColor} relative overflow-hidden transition-smooth hover:shadow-lg`}>
           {/* Animated background pulse */}
           {isHovered && (
             <motion.div
@@ -431,7 +431,7 @@ export default function FAIRModelTab() {
                 <div className="text-xs text-muted-foreground mb-1 font-semibold">Minimum</div>
                 <motion.div
                   className="bg-background/60 backdrop-blur-sm rounded px-2 py-1.5 text-center font-mono text-sm border border-border/50"
-                  whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
+                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                 >
                   {component.min}
                 </motion.div>
@@ -440,7 +440,7 @@ export default function FAIRModelTab() {
                 <div className="text-xs text-muted-foreground mb-1 font-semibold">Average</div>
                 <motion.div
                   className="bg-primary/20 backdrop-blur-sm rounded px-2 py-1.5 text-center font-mono text-sm font-bold border-2 border-primary/50"
-                  whileHover={{ scale: 1.05, borderColor: "rgba(59, 130, 246, 1)" }}
+                  whileHover={{ borderColor: "rgba(59, 130, 246, 1)" }}
                   animate={isHovered ? { scale: [1, 1.05, 1] } : {}}
                   transition={{ duration: 0.5 }}
                 >
@@ -451,7 +451,7 @@ export default function FAIRModelTab() {
                 <div className="text-xs text-muted-foreground mb-1 font-semibold">Maximum</div>
                 <motion.div
                   className="bg-background/60 backdrop-blur-sm rounded px-2 py-1.5 text-center font-mono text-sm border border-border/50"
-                  whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.1)" }}
+                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
                 >
                   {component.max}
                 </motion.div>
@@ -583,7 +583,7 @@ export default function FAIRModelTab() {
             </div>
 
             {/* Level 4: CF, PoA, TCap, RS, PL sub-components, SL sub-components */}
-            <div className="grid grid-cols-9 gap-3 mb-4">
+            <div className="grid grid-cols-9 gap-2 mb-4">
               <WorkbookBox component={componentMap.cf} delay={1.2} size="sm" />
               <WorkbookBox component={componentMap.poa} delay={1.3} size="sm" />
               <WorkbookBox component={componentMap.tcap} delay={1.4} size="sm" />
@@ -595,7 +595,7 @@ export default function FAIRModelTab() {
               <WorkbookBox component={componentMap.slm} delay={1.75} size="sm" />
             </div>
 
-            <div className="grid grid-cols-9 gap-3">
+            <div className="grid grid-cols-9 gap-2">
               <div></div>
               <div></div>
               <div></div>
@@ -608,7 +608,7 @@ export default function FAIRModelTab() {
             </div>
 
             {/* Level 5: SLM Sub-components */}
-            <div className="grid grid-cols-9 gap-3">
+            <div className="grid grid-cols-9 gap-2">
               <div></div>
               <div></div>
               <div></div>
@@ -622,7 +622,7 @@ export default function FAIRModelTab() {
                 <WorkbookBox component={componentMap.cadvl} delay={2.0} size="sm" />
               </div>
             </div>
-            <div className="grid grid-cols-9 gap-3">
+            <div className="grid grid-cols-9 gap-2">
               <div></div>
               <div></div>
               <div></div>
@@ -722,9 +722,9 @@ export default function FAIRModelTab() {
               >
                 <h4 className="font-semibold text-lg mb-2">Monte Carlo Simulation</h4>
                 <p className="text-sm leading-relaxed">
-                  The Min, Average (Most Likely), and Max values are derived from <strong>10,000 Monte Carlo simulations</strong> that 
-                  model uncertainty and variability. The simulation uses PERT distributions for input parameters and aggregates 
-                  results to provide a probabilistic view of potential outcomes. This approach captures the full range of 
+                  The Min, Average (Most Likely), and Max values are derived from <strong>10,000 Monte Carlo simulations</strong> that
+                  model uncertainty and variability. The simulation uses PERT distributions for input parameters and aggregates
+                  results to provide a probabilistic view of potential outcomes. This approach captures the full range of
                   possible scenarios rather than relying on single-point estimates.
                 </p>
               </motion.div>

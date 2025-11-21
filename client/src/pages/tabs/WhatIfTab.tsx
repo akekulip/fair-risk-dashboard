@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { Calculator, TrendingDown, DollarSign, Zap, RotateCcw, CheckCircle2, ArrowRight, Info } from 'lucide-react';
+import { Calculator, TrendingDown, DollarSign, Zap, RotateCcw, CheckCircle2, ArrowRight, Info, Save, FolderOpen, Trash2 } from 'lucide-react';
 import { useState, useMemo, useEffect } from 'react';
 import { Line, Bar, Radar } from 'react-chartjs-2';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,7 +13,12 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useScenarios } from '@/hooks/useScenarios';
 
 interface ControlSettings {
   mfaCoverage: number;
@@ -44,6 +49,12 @@ export default function WhatIfTab() {
   const [showComparison, setShowComparison] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Scenario Management
+  const { scenarios: savedScenarios, saveScenario, loadScenario, deleteScenario } = useScenarios();
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [loadDialogOpen, setLoadDialogOpen] = useState(false);
+  const [newScenarioName, setNewScenarioName] = useState('');
 
   // Baseline risk metrics
   const baselineMetrics: RiskMetrics = {
@@ -331,16 +342,112 @@ export default function WhatIfTab() {
         transition={{ delay: 0.1, duration: 0.5 }}
       >
         <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Quick Scenarios</CardTitle>
-            <CardDescription>Pre-configured security investment scenarios</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Quick Scenarios</CardTitle>
+              <CardDescription>Pre-configured security investment scenarios</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Save className="h-4 w-4" />
+                    Save Current
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Save Scenario</DialogTitle>
+                    <DialogDescription>
+                      Save your current control settings to reload later.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="name" className="text-right">
+                        Name
+                      </Label>
+                      <Input
+                        id="name"
+                        value={newScenarioName}
+                        onChange={(e) => setNewScenarioName(e.target.value)}
+                        className="col-span-3"
+                        placeholder="e.g., Q4 Plan"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button onClick={() => {
+                      if (newScenarioName) {
+                        saveScenario(newScenarioName, controls);
+                        setNewScenarioName('');
+                        setSaveDialogOpen(false);
+                      }
+                    }}>
+                      Save Scenario
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              <Dialog open={loadDialogOpen} onOpenChange={setLoadDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <FolderOpen className="h-4 w-4" />
+                    Load Saved
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Load Scenario</DialogTitle>
+                    <DialogDescription>
+                      Select a saved scenario to load.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-2 mt-2 max-h-[300px] overflow-y-auto">
+                    {savedScenarios.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-4">No saved scenarios found.</p>
+                    ) : (
+                      savedScenarios.map((scenario) => (
+                        <div key={scenario.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                          <div className="cursor-pointer flex-1" onClick={() => {
+                            const data = loadScenario(scenario.id);
+                            if (data) {
+                              setControls(data);
+                              setShowComparison(true);
+                              setLoadDialogOpen(false);
+                            }
+                          }}>
+                            <div className="font-medium">{scenario.name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {new Date(scenario.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteScenario(scenario.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-4">
               {Object.entries(scenarios).map(([key, scenario]) => (
                 <motion.div
                   key={key}
-                  whileHover={{ scale: 1.02 }}
+                  whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <Button
@@ -380,7 +487,7 @@ export default function WhatIfTab() {
             {/* MFA Coverage */}
             <motion.div
               className="space-y-3"
-              whileHover={{ scale: 1.01 }}
+              whileHover={{ opacity: 0.9 }}
               transition={{ duration: 0.2 }}
             >
               <div className="flex items-center justify-between">
@@ -421,7 +528,7 @@ export default function WhatIfTab() {
             {/* Security Training */}
             <motion.div
               className="space-y-3"
-              whileHover={{ scale: 1.01 }}
+              whileHover={{ opacity: 0.9 }}
               transition={{ duration: 0.2 }}
             >
               <div className="flex items-center justify-between">
@@ -462,7 +569,7 @@ export default function WhatIfTab() {
             {/* IAM Controls */}
             <motion.div
               className="space-y-3"
-              whileHover={{ scale: 1.01 }}
+              whileHover={{ opacity: 0.9 }}
               transition={{ duration: 0.2 }}
             >
               <div className="flex items-center justify-between">
@@ -503,7 +610,7 @@ export default function WhatIfTab() {
             {/* Third-Party Controls */}
             <motion.div
               className="space-y-3"
-              whileHover={{ scale: 1.01 }}
+              whileHover={{ opacity: 0.9 }}
               transition={{ duration: 0.2 }}
             >
               <div className="flex items-center justify-between">
@@ -656,9 +763,9 @@ export default function WhatIfTab() {
                   <div>
                     <h4 className="font-semibold mb-1">Business Case</h4>
                     <p className="text-sm text-muted-foreground">
-                      Investing <strong>${(currentMetrics.investmentCost / 1e6).toFixed(1)}M</strong> in security controls 
-                      reduces annual cyber risk by <strong>${(currentMetrics.aleReduction / 1e9).toFixed(2)}B</strong>, 
-                      delivering a <strong>{currentMetrics.roi.toFixed(1)}x return</strong> on investment. 
+                      Investing <strong>${(currentMetrics.investmentCost / 1e6).toFixed(1)}M</strong> in security controls
+                      reduces annual cyber risk by <strong>${(currentMetrics.aleReduction / 1e9).toFixed(2)}B</strong>,
+                      delivering a <strong>{currentMetrics.roi.toFixed(1)}x return</strong> on investment.
                       The payback period is approximately <strong>{(currentMetrics.investmentCost / currentMetrics.aleReduction * 12).toFixed(1)} months</strong>.
                     </p>
                   </div>

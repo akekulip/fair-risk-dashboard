@@ -72,7 +72,7 @@ export default function LossMagnitudeTab() {
   }
 
   const loss = data.lossMagnitude;
-  
+
   // Add safety checks for nested properties
   if (!loss.primary?.components || !loss.secondary?.components) {
     return <div className="flex items-center justify-center h-96">Loading data structure...</div>;
@@ -252,7 +252,7 @@ export default function LossMagnitudeTab() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function (context: any) {
             const value = context.parsed;
             const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0);
             const percentage = ((value / total) * 100).toFixed(1);
@@ -290,7 +290,7 @@ export default function LossMagnitudeTab() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function (context: any) {
             return formatCurrency(context.parsed.y);
           }
         }
@@ -301,7 +301,7 @@ export default function LossMagnitudeTab() {
         beginAtZero: true,
         ticks: {
           color: '#fff',
-          callback: function(value: any) {
+          callback: function (value: any) {
             return formatCurrency(value);
           }
         },
@@ -324,12 +324,12 @@ export default function LossMagnitudeTab() {
     }
   };
 
-  const ComponentCard = ({ 
-    id, 
-    title, 
-    value, 
-    range, 
-    delay = 0 
+  const ComponentCard = ({
+    id,
+    title,
+    value,
+    range,
+    delay = 0
   }: {
     id: string;
     title: string;
@@ -341,7 +341,7 @@ export default function LossMagnitudeTab() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
-      whileHover={{ scale: 1.03, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}
+      whileHover={{ y: -2 }}
       onClick={() => handleComponentClick(id)}
       className="cursor-pointer"
     >
@@ -562,25 +562,25 @@ export default function LossMagnitudeTab() {
               <div>
                 <h4 className="font-semibold mb-2">IBM Cost of a Data Breach Report 2024</h4>
                 <p className="text-sm text-muted-foreground">
-                  Healthcare average: ${(externalData.industryBenchmarks.healthcareBreachCost.value / 1e6).toFixed(2)}M per breach. 
-                  Global average: ${(externalData.industryBenchmarks.globalBreachCost.value / 1e6).toFixed(2)}M. 
+                  Healthcare average: ${(externalData.industryBenchmarks.healthcareBreachCost.value / 1e6).toFixed(2)}M per breach.
+                  Global average: ${(externalData.industryBenchmarks.globalBreachCost.value / 1e6).toFixed(2)}M.
                   Mean time to identify: {externalData.industryBenchmarks.meanTimeToDetect.value} days, contain: {externalData.industryBenchmarks.meanTimeToContain.value} days.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Verizon Data Breach Investigations Report (DBIR) 2024</h4>
                 <p className="text-sm text-muted-foreground">
-                  {(externalData.industryBenchmarks.ransomwareSystemIntrusion.value * 100).toFixed(0)}% of system intrusion breaches involved ransomware. 
-                  {(externalData.industryBenchmarks.stolenCredentials.value * 100).toFixed(0)}% of breaches involved stolen credentials. 
-                  Average ransomware downtime: {externalData.industryBenchmarks.averageDowntime.value} days. 
+                  {(externalData.industryBenchmarks.ransomwareSystemIntrusion.value * 100).toFixed(0)}% of system intrusion breaches involved ransomware.
+                  {(externalData.industryBenchmarks.stolenCredentials.value * 100).toFixed(0)}% of breaches involved stolen credentials.
+                  Average ransomware downtime: {externalData.industryBenchmarks.averageDowntime.value} days.
                   Average ransom demand: ${(externalData.industryBenchmarks.averageRansom.value / 1e6).toFixed(2)}M.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-2">Regulatory Fine Precedents</h4>
                 <p className="text-sm text-muted-foreground">
-                  HIPAA: Anthem ($16M, 79M records), Premera ($6.85M, 10.4M records). 
-                  GDPR: Amazon (€746M), Meta (€1.2B), British Airways (€22M). 
+                  HIPAA: Anthem ($16M, 79M records), Premera ($6.85M, 10.4M records).
+                  GDPR: Amazon (€746M), Meta (€1.2B), British Airways (€22M).
                   Hyperion's exposure (130M records, multi-jurisdictional) significantly exceeds historical precedents.
                 </p>
               </div>

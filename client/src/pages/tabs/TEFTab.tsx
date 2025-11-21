@@ -162,7 +162,7 @@ export default function TEFTab() {
       },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function (context: any) {
             let label = context.dataset.label || '';
             if (label) {
               label += ': ';
@@ -238,7 +238,7 @@ export default function TEFTab() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.6 }}
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ y: -1 }}
         onClick={() => handleComponentClick('tef')}
         className="cursor-pointer"
       >
@@ -256,7 +256,7 @@ export default function TEFTab() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              <strong>Interpretation:</strong> Hyperion should expect approximately <strong>1 Iron Vortex attack attempt every 10 months</strong> (1.2/year). 
+              <strong>Interpretation:</strong> Hyperion should expect approximately <strong>1 Iron Vortex attack attempt every 10 months</strong> (1.2/year).
               This represents a <strong>96% annual probability</strong> of at least one attack attempt within the next 12 months.
             </p>
             <div className="mt-4 p-3 bg-orange-500/20 rounded-lg">
@@ -277,7 +277,7 @@ export default function TEFTab() {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ y: -1 }}
           onClick={() => handleComponentClick('contactFrequency')}
           className="cursor-pointer"
         >
@@ -308,7 +308,7 @@ export default function TEFTab() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Based on Iron Vortex reconnaissance patterns: monthly phishing campaigns (12/year), 
+                  Based on Iron Vortex reconnaissance patterns: monthly phishing campaigns (12/year),
                   weekly credential stuffing (52/year), up to daily automated scanning (365/year).
                 </p>
               </div>
@@ -320,7 +320,7 @@ export default function TEFTab() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          whileHover={{ scale: 1.02 }}
+          whileHover={{ y: -1 }}
           onClick={() => handleComponentClick('probabilityOfAction')}
           className="cursor-pointer"
         >
@@ -351,7 +351,7 @@ export default function TEFTab() {
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Iron Vortex is highly selective: 2-3 attacks per year across ~20 scouted targets (15% action rate). 
+                  Iron Vortex is highly selective: 2-3 attacks per year across ~20 scouted targets (15% action rate).
                   Hyperion's high-value genomic data may increase targeting probability.
                 </p>
               </div>
@@ -377,8 +377,8 @@ export default function TEFTab() {
             </div>
             <div className="mt-4 p-4 bg-muted/30 rounded-lg">
               <p className="text-sm">
-                <strong>Note:</strong> Probability of Action is scaled ×100 for visualization. The wide range in TEF 
-                (0.06 to 5.4) reflects uncertainty in both reconnaissance frequency and attack selectivity, which is 
+                <strong>Note:</strong> Probability of Action is scaled ×100 for visualization. The wide range in TEF
+                (0.06 to 5.4) reflects uncertainty in both reconnaissance frequency and attack selectivity, which is
                 appropriate given limited historical data on this specific threat actor.
               </p>
             </div>
@@ -404,7 +404,7 @@ export default function TEFTab() {
             <div>
               <h4 className="font-semibold mb-2">Threat Actor</h4>
               <p className="text-sm text-muted-foreground">
-                <strong>Iron Vortex</strong> - Russian cybercriminal ransomware group with demonstrated capability 
+                <strong>Iron Vortex</strong> - Russian cybercriminal ransomware group with demonstrated capability
                 against genetic testing companies. Successfully breached two similar organizations in the past 6 months.
               </p>
             </div>
@@ -440,8 +440,8 @@ export default function TEFTab() {
             </div>
             <div className="p-4 bg-red-500/10 rounded-lg border border-red-500/30">
               <p className="text-sm">
-                <strong>Key Insight:</strong> The 1.2 attacks/year estimate is conservative compared to industry data 
-                showing 66% annual ransomware prevalence. However, Iron Vortex's selectivity (targeting only high-value 
+                <strong>Key Insight:</strong> The 1.2 attacks/year estimate is conservative compared to industry data
+                showing 66% annual ransomware prevalence. However, Iron Vortex's selectivity (targeting only high-value
                 genomic data) justifies a lower frequency than broad-spectrum ransomware campaigns.
               </p>
             </div>
@@ -469,9 +469,9 @@ export default function TEFTab() {
                   <ExternalLink className="h-4 w-4 mt-1 flex-shrink-0" />
                   <div>
                     <div className="font-semibold text-sm">{source.name}</div>
-                    <a 
-                      href={source.url} 
-                      target="_blank" 
+                    <a
+                      href={source.url}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-blue-400 hover:underline"
                     >

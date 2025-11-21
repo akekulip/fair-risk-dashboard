@@ -11,13 +11,17 @@ interface DashboardLayoutProps {
   onTabChange?: (value: string) => void;
 }
 
+import { useExport } from '@/hooks/useExport';
+import { Download } from 'lucide-react';
+
 export default function DashboardLayout({ children, activeTab = 'summary', onTabChange }: DashboardLayoutProps) {
   const { theme, toggleTheme } = useTheme();
+  const { exportToPDF } = useExport();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Header */}
-      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <header className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 no-print">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -29,20 +33,32 @@ export default function DashboardLayout({ children, activeTab = 'summary', onTab
                 <p className="text-sm text-muted-foreground">Hyperion Genomics - Iron Vortex Threat Assessment</p>
               </div>
             </div>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
-            >
-              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => exportToPDF('dashboard-content', 'fair-risk-report')}
+                data-export-trigger="true"
+                className="gap-2 hidden md:flex"
+              >
+                <Download className="h-4 w-4" />
+                Export PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleTheme}
+                className="rounded-full"
+              >
+                {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
+      <main id="dashboard-content" className="container mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={onTabChange} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 h-auto p-1 bg-muted/50">
             <TabsTrigger value="summary" className="flex items-center gap-2 py-3">

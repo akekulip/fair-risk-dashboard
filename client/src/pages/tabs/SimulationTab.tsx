@@ -1,7 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Activity, BarChart3, TrendingUp, Info, Zap } from 'lucide-react';
-import { useEffect, useState, useMemo } from 'react';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Activity, BarChart3, TrendingUp, Info, Zap, Play, RotateCcw, Settings2 } from 'lucide-react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Line, Bar, Scatter } from 'react-chartjs-2';
 import { motion } from 'framer-motion';
 import { AnimatedCurrency } from '@/components/AnimatedCounter';
@@ -26,15 +28,49 @@ interface ChartDetail {
   methodology: string;
 }
 
+interface SimulationParams {
+  lefMin: number;
+  lefMode: number;
+  lefMax: number;
+  lmMin: number;
+  lmMode: number;
+  lmMax: number;
+  iterations: number;
+}
+
 export default function SimulationTab() {
-  const [data, setData] = useState<FAIRData | null>(null);
+  const [defaultData, setDefaultData] = useState<FAIRData | null>(null);
   const [selectedChart, setSelectedChart] = useState<ChartDetail | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
+
+  // Simulation parameters
+  const [params, setParams] = useState<SimulationParams>({
+    lefMin: 0.6,
+    lefMode: 0.96,
+    lefMax: 1.8,
+    lmMin: 500000000,
+    lmMode: 5000000000,
+    lmMax: 20000000000,
+    iterations: 5000
+  });
 
   useEffect(() => {
     fetch('/fair-data.json')
       .then(res => res.json())
-      .then(setData)
+      .then(data => {
+        setDefaultData(data);
+        // Initialize params from default data
+        setParams({
+          lefMin: data.lossEventFrequency.min,
+          lefMode: data.lossEventFrequency.mostLikely,
+          lefMax: data.lossEventFrequency.max,
+          lmMin: data.lossMagnitude.total.min,
+          lmMode: data.lossMagnitude.total.mostLikely,
+          lmMax: data.lossMagnitude.total.max,
+          iterations: 5000
+        });
+      })
       .catch(console.error);
   }, []);
 
@@ -42,7 +78,7 @@ export default function SimulationTab() {
   function triangularRandom(min: number, mode: number, max: number): number {
     const u = Math.random();
     const f = (mode - min) / (max - min);
-    
+
     if (u < f) {
       return min + Math.sqrt(u * (max - min) * (mode - min));
     } else {
@@ -50,31 +86,33 @@ export default function SimulationTab() {
     }
   }
 
+  // Run simulation with current parameters
+  const runSimulation = useCallback(() => {
+    setIsSimulating(true);
+
+    // Simulate async behavior for UX
+    setTimeout(() => {
+      setIsSimulating(false);
+    }, 500);
+
+    return params;
+  }, [params]);
+
   // Generate Monte Carlo simulation data
   const simulationData = useMemo(() => {
-    if (!data) return null;
+    if (!params) return null;
 
     const samples = [];
-    for (let i = 0; i < 10000; i++) {
-      const lef = triangularRandom(
-        data.lossEventFrequency.min,
-        data.lossEventFrequency.mostLikely,
-        data.lossEventFrequency.max
-      );
-      
-      const loss = triangularRandom(
-        data.lossMagnitude.total.min,
-        data.lossMagnitude.total.mostLikely,
-        data.lossMagnitude.total.max
-      );
-      
+    for (let i = 0; i < params.iterations; i++) {
+      const lef = triangularRandom(params.lefMin, params.lefMode, params.lefMax);
+      const loss = triangularRandom(params.lmMin, params.lmMode, params.lmMax);
       const ale = lef * loss;
       samples.push({ lef, loss, ale });
     }
 
     samples.sort((a, b) => a.ale - b.ale);
     return samples;
-  }, [data]);
+  }, [params]);
 
   // Calculate statistics
   const statistics = useMemo(() => {
@@ -130,18 +168,18 @@ export default function SimulationTab() {
   const scatterData = useMemo(() => {
     if (!simulationData) return null;
 
-    // Sample every 50th point for performance
+    // Sample every 25th point for performance
     return simulationData
-      .filter((_, i) => i % 50 === 0)
+      .filter((_, i) => i % 25 === 0)
       .map(s => ({ x: s.lef, y: s.loss / 1e9 }));
   }, [simulationData]);
 
   // Cumulative distribution
   const cumulativeData = useMemo(() => {
     if (!simulationData) return null;
-    
+
     const points = [];
-    for (let i = 0; i < simulationData.length; i += 100) {
+    for (let i = 0; i < simulationData.length; i += 50) {
       points.push({
         x: simulationData[i].ale / 1e9,
         y: (i / simulationData.length) * 100,
@@ -150,47 +188,59 @@ export default function SimulationTab() {
     return points;
   }, [simulationData]);
 
-  if (!data || !simulationData || !statistics || !histogramData || !scatterData || !cumulativeData) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center space-y-4">
-          <Activity className="h-12 w-12 animate-spin mx-auto text-blue-500" />
-          <p>Running Monte Carlo simulation (10,000 iterations)...</p>
-        </div>
-      </div>
-    );
-  }
-
   const formatCurrency = (value: number) => {
     if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
     if (value >= 1e6) return `$${(value / 1e6).toFixed(0)}M`;
     return `$${value.toLocaleString()}`;
   };
 
+  const formatNumber = (value: number, decimals: number = 2) => {
+    return value.toFixed(decimals);
+  };
+
+  const resetToDefaults = () => {
+    if (defaultData) {
+      setParams({
+        lefMin: defaultData.lossEventFrequency.min,
+        lefMode: defaultData.lossEventFrequency.mostLikely,
+        lefMax: defaultData.lossEventFrequency.max,
+        lmMin: defaultData.lossMagnitude.total.min,
+        lmMode: defaultData.lossMagnitude.total.mostLikely,
+        lmMax: defaultData.lossMagnitude.total.max,
+        iterations: 5000
+      });
+    }
+  };
+
+  if (!defaultData || !simulationData || !statistics || !histogramData || !scatterData || !cumulativeData) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <Activity className="h-12 w-12 animate-spin mx-auto text-blue-500" />
+          <p>Loading simulation engine...</p>
+        </div>
+      </div>
+    );
+  }
+
   const chartDetails: Record<string, ChartDetail> = {
     histogram: {
       title: "ALE Distribution Histogram",
-      description: "Frequency distribution of Annualized Loss Expectancy across 10,000 Monte Carlo iterations",
-      interpretation: "This histogram shows how likely different ALE values are. The peak around $2B indicates the most probable outcome. The long tail to the right represents low-probability, high-impact scenarios. The distribution is right-skewed, meaning there's a small but real chance of losses exceeding $10B in extreme scenarios.",
-      methodology: "Monte Carlo simulation with 10,000 iterations. Each iteration randomly samples LEF and Loss Magnitude from triangular distributions (min, most likely, max) and calculates ALE = LEF × LM. Results are grouped into 50 bins to create the histogram. This approach captures the full range of uncertainty in both frequency and magnitude estimates."
+      description: `Frequency distribution of Annualized Loss Expectancy across ${params.iterations.toLocaleString()} Monte Carlo iterations`,
+      interpretation: "This histogram shows how likely different ALE values are. The peak indicates the most probable outcome. The distribution shape reveals the range of uncertainty in both frequency and magnitude estimates.",
+      methodology: `Monte Carlo simulation with ${params.iterations.toLocaleString()} iterations. Each iteration randomly samples LEF and Loss Magnitude from triangular distributions (min, most likely, max) and calculates ALE = LEF × LM.`
     },
     cumulative: {
       title: "Cumulative Distribution Function (CDF)",
       description: "Probability that ALE will be less than or equal to a given value",
-      interpretation: "This curve answers the question: 'What's the probability that losses will be below X?' For example, there's a 50% chance ALE will be below $2.02B (median), and a 90% chance it will be below $3.8B. The steep slope in the middle indicates high confidence in the central estimate, while the long tail shows residual uncertainty in extreme scenarios.",
-      methodology: "Cumulative distribution calculated by sorting all 10,000 ALE samples and plotting the percentage of samples below each value. This transforms the histogram into a cumulative probability curve, making it easier to read specific percentile values (e.g., 'There's a 95% chance losses won't exceed $X')."
+      interpretation: "This curve answers: 'What's the probability that losses will be below X?' The steep slope in the middle indicates high confidence in the central estimate, while the tail shows residual uncertainty.",
+      methodology: `Cumulative distribution calculated by sorting all ${params.iterations.toLocaleString()} ALE samples and plotting the percentage of samples below each value.`
     },
     scatter: {
       title: "LEF vs Loss Magnitude Correlation",
       description: "Relationship between Loss Event Frequency and Loss Magnitude across simulations",
-      interpretation: "This scatter plot shows that LEF and Loss Magnitude are independent variables (no correlation pattern visible). Each point represents one simulation iteration. The clustering shows that most scenarios fall within 0.6-1.8 events/year and $1.0-2.5B loss magnitude. Outliers in the upper-right represent worst-case scenarios with both high frequency and high magnitude.",
-      methodology: "Each point plots one Monte Carlo iteration's LEF (x-axis) vs Loss Magnitude (y-axis). Sampled every 50th iteration (200 points total) for visualization performance. Independence of variables is a key FAIR assumption - frequency and magnitude are estimated separately and combined multiplicatively."
-    },
-    percentiles: {
-      title: "Percentile Analysis",
-      description: "Statistical distribution of ALE across key percentiles",
-      interpretation: "Percentiles provide decision-makers with a range of outcomes: P5 ($610M) represents a best-case scenario with low likelihood, P50 ($2.02B) is the median/most likely outcome, and P95 ($4.58B) represents a worst-case scenario that still has a 5% chance of being exceeded. The wide range ($610M to $4.58B) reflects significant uncertainty in both frequency and magnitude estimates.",
-      methodology: "Percentiles calculated by sorting 10,000 ALE samples and selecting values at specific positions: P5 = 5th percentile (500th sample), P50 = median (5,000th sample), P95 = 95th percentile (9,500th sample). These values correspond to the cumulative distribution function at 5%, 50%, and 95% probability levels."
+      interpretation: "This scatter plot shows that LEF and Loss Magnitude are independent variables. Each point represents one simulation iteration. The clustering shows where most scenarios fall.",
+      methodology: "Each point plots one Monte Carlo iteration's LEF (x-axis) vs Loss Magnitude (y-axis). Sampled for visualization performance."
     }
   };
 
@@ -199,39 +249,30 @@ export default function SimulationTab() {
     setDialogOpen(true);
   };
 
-  const StatCard = ({ 
-    title, 
-    value, 
-    description, 
-    delay = 0,
-    onClick 
+  const StatCard = ({
+    title,
+    value,
+    description,
+    delay = 0
   }: {
     title: string;
     value: number;
     description: string;
     delay?: number;
-    onClick?: () => void;
   }) => (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.5 }}
-      whileHover={{ scale: 1.05 }}
-      onClick={onClick}
-      className={onClick ? "cursor-pointer" : ""}
+      transition={{ delay, duration: 0.4 }}
+      key={value} // Re-animate on value change
     >
-      <Card className="relative">
-        {onClick && (
-          <div className="absolute top-3 right-3">
-            <Info className="h-4 w-4 opacity-50" />
-          </div>
-        )}
+      <Card className="glass-effect">
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">{title}</CardTitle>
+          <CardTitle className="metric-label">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">
-            <AnimatedCurrency value={value} duration={2} />
+          <div className="metric-value text-blue-600 dark:text-blue-400">
+            <AnimatedCurrency value={value} duration={1.5} />
           </div>
           <p className="text-xs text-muted-foreground mt-1">{description}</p>
         </CardContent>
@@ -256,15 +297,13 @@ export default function SimulationTab() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
         callbacks: {
-          title: function(context: any) {
+          title: function (context: any) {
             return `ALE: $${context[0].label}B`;
           },
-          label: function(context: any) {
+          label: function (context: any) {
             return `Frequency: ${context.parsed.y} occurrences`;
           }
         }
@@ -272,35 +311,18 @@ export default function SimulationTab() {
     },
     scales: {
       x: {
-        title: {
-          display: true,
-          text: 'Annualized Loss Expectancy (Billions $)',
-          color: '#fff'
-        },
-        ticks: {
-          color: '#fff',
-          maxTicksLimit: 10
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
+        title: { display: true, text: 'Annualized Loss Expectancy (Billions $)', color: '#fff' },
+        ticks: { color: '#fff', maxTicksLimit: 10 },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' }
       },
       y: {
-        title: {
-          display: true,
-          text: 'Frequency',
-          color: '#fff'
-        },
-        ticks: {
-          color: '#fff'
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
+        title: { display: true, text: 'Frequency', color: '#fff' },
+        ticks: { color: '#fff' },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' }
       }
     },
     animation: {
-      duration: 2000,
+      duration: 1000,
       easing: 'easeInOutQuart' as const,
     }
   };
@@ -324,15 +346,13 @@ export default function SimulationTab() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
         callbacks: {
-          title: function(context: any) {
+          title: function (context: any) {
             return `ALE: $${context[0].parsed.x.toFixed(2)}B`;
           },
-          label: function(context: any) {
+          label: function (context: any) {
             return `Probability ≤ this value: ${context.parsed.y.toFixed(1)}%`;
           }
         }
@@ -341,36 +361,20 @@ export default function SimulationTab() {
     scales: {
       x: {
         type: 'linear' as const,
-        title: {
-          display: true,
-          text: 'Annualized Loss Expectancy (Billions $)',
-          color: '#fff'
-        },
-        ticks: {
-          color: '#fff'
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
+        title: { display: true, text: 'Annualized Loss Expectancy (Billions $)', color: '#fff' },
+        ticks: { color: '#fff' },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' }
       },
       y: {
-        title: {
-          display: true,
-          text: 'Cumulative Probability (%)',
-          color: '#fff'
-        },
-        ticks: {
-          color: '#fff'
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        },
+        title: { display: true, text: 'Cumulative Probability (%)', color: '#fff' },
+        ticks: { color: '#fff' },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' },
         min: 0,
         max: 100
       }
     },
     animation: {
-      duration: 2000,
+      duration: 1000,
       easing: 'easeInOutQuart' as const,
     }
   };
@@ -382,7 +386,7 @@ export default function SimulationTab() {
         data: scatterData,
         backgroundColor: 'rgba(168, 85, 247, 0.6)',
         borderColor: 'rgba(168, 85, 247, 1)',
-        pointRadius: 4,
+        pointRadius: 3,
       },
     ],
   };
@@ -391,12 +395,10 @@ export default function SimulationTab() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
         callbacks: {
-          label: function(context: any) {
+          label: function (context: any) {
             return `LEF: ${context.parsed.x.toFixed(2)}, Loss: $${context.parsed.y.toFixed(2)}B`;
           }
         }
@@ -405,34 +407,18 @@ export default function SimulationTab() {
     scales: {
       x: {
         type: 'linear' as const,
-        title: {
-          display: true,
-          text: 'Loss Event Frequency (events/year)',
-          color: '#fff'
-        },
-        ticks: {
-          color: '#fff'
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
+        title: { display: true, text: 'Loss Event Frequency (events/year)', color: '#fff' },
+        ticks: { color: '#fff' },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' }
       },
       y: {
-        title: {
-          display: true,
-          text: 'Loss Magnitude (Billions $)',
-          color: '#fff'
-        },
-        ticks: {
-          color: '#fff'
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
-        }
+        title: { display: true, text: 'Loss Magnitude (Billions $)', color: '#fff' },
+        ticks: { color: '#fff' },
+        grid: { color: 'rgba(255, 255, 255, 0.1)' }
       }
     },
     animation: {
-      duration: 2000,
+      duration: 1000,
       easing: 'easeInOutQuart' as const,
     }
   };
@@ -445,238 +431,280 @@ export default function SimulationTab() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-blue-500/50">
+        <Card className="border-blue-500/50 glass-effect">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Zap className="h-5 w-5 text-blue-500" />
-              Monte Carlo Simulation Results
+              Interactive Monte Carlo Simulation
             </CardTitle>
             <CardDescription>
-              10,000 iterations modeling uncertainty in LEF and Loss Magnitude • Click any chart for methodology
+              Adjust parameters to explore different risk scenarios • Real-time results with {params.iterations.toLocaleString()} iterations
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm">
-              <Badge variant="outline" className="border-green-500/50">
-                <Activity className="h-3 w-3 mr-1" />
-                Simulation Complete
-              </Badge>
-              <span className="text-muted-foreground">
-                Triangular distributions • 90% confidence intervals
-              </span>
-            </div>
-          </CardContent>
         </Card>
       </motion.div>
 
-      {/* Key Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard
-          title="Mean ALE"
-          value={statistics.mean}
-          description="Average across all iterations"
-          delay={0.1}
-          onClick={() => handleChartClick('percentiles')}
-        />
-        <StatCard
-          title="Median ALE (P50)"
-          value={statistics.p50}
-          description="50th percentile"
-          delay={0.15}
-          onClick={() => handleChartClick('percentiles')}
-        />
-        <StatCard
-          title="Standard Deviation"
-          value={statistics.stdDev}
-          description="Measure of uncertainty"
-          delay={0.2}
-          onClick={() => handleChartClick('percentiles')}
-        />
-        <StatCard
-          title="P95 (Worst Case)"
-          value={statistics.p95}
-          description="95th percentile"
-          delay={0.25}
-          onClick={() => handleChartClick('percentiles')}
-        />
+      {/* 2-Column Layout: Controls + Results */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* LEFT: Parameter Controls (2 columns) */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="lg:col-span-2 space-y-4"
+        >
+          <Card className="glass-effect">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Settings2 className="h-5 w-5" />
+                Simulation Parameters
+              </CardTitle>
+              <CardDescription>Adjust values to see real-time impact</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Loss Event Frequency */}
+              <div className="space-y-4 p-4 bg-blue-500/5 rounded-lg border border-blue-500/20">
+                <h4 className="font-semibold text-sm flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                  Loss Event Frequency (events/year)
+                </h4>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">
+                      Minimum: {formatNumber(params.lefMin)}
+                    </label>
+                    <Slider
+                      value={[params.lefMin]}
+                      onValueChange={([value]) => setParams({ ...params, lefMin: value })}
+                      min={0}
+                      max={params.lefMode}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">
+                      Most Likely: {formatNumber(params.lefMode)}
+                    </label>
+                    <Slider
+                      value={[params.lefMode]}
+                      onValueChange={([value]) => setParams({ ...params, lefMode: value })}
+                      min={params.lefMin}
+                      max={params.lefMax}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">
+                      Maximum: {formatNumber(params.lefMax)}
+                    </label>
+                    <Slider
+                      value={[params.lefMax]}
+                      onValueChange={([value]) => setParams({ ...params, lefMax: value })}
+                      min={params.lefMode}
+                      max={5}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Loss Magnitude */}
+              <div className="space-y-4 p-4 bg-purple-500/5 rounded-lg border border-purple-500/20">
+                <h4 className="font-semibold text-sm flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-purple-500" />
+                  Loss Magnitude (per event)
+                </h4>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">
+                      Minimum: {formatCurrency(params.lmMin)}
+                    </label>
+                    <Slider
+                      value={[params.lmMin / 1e9]}
+                      onValueChange={([value]) => setParams({ ...params, lmMin: value * 1e9 })}
+                      min={0}
+                      max={params.lmMode / 1e9}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">
+                      Most Likely: {formatCurrency(params.lmMode)}
+                    </label>
+                    <Slider
+                      value={[params.lmMode / 1e9]}
+                      onValueChange={([value]) => setParams({ ...params, lmMode: value * 1e9 })}
+                      min={params.lmMin / 1e9}
+                      max={params.lmMax / 1e9}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-2 block">
+                      Maximum: {formatCurrency(params.lmMax)}
+                    </label>
+                    <Slider
+                      value={[params.lmMax / 1e9]}
+                      onValueChange={([value]) => setParams({ ...params, lmMax: value * 1e9 })}
+                      min={params.lmMode / 1e9}
+                      max={50}
+                      step={0.5}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Iterations */}
+              <div className="space-y-3 p-4 bg-green-500/5 rounded-lg border border-green-500/20">
+                <h4 className="font-semibold text-sm flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-green-500" />
+                  Iterations: {params.iterations.toLocaleString()}
+                </h4>
+                <Slider
+                  value={[params.iterations]}
+                  onValueChange={([value]) => setParams({ ...params, iterations: value })}
+                  min={100}
+                  max={10000}
+                  step={100}
+                  className="w-full"
+                />
+                <p className="text-xs text-muted-foreground">
+                  More iterations = higher accuracy (slower)
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  onClick={runSimulation}
+                  className="flex-1"
+                  disabled={isSimulating}
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  {isSimulating ? 'Running...' : 'Re-run Simulation'}
+                </Button>
+                <Button
+                  onClick={resetToDefaults}
+                  variant="outline"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* RIGHT: Results (3 columns) */}
+        <div className="lg:col-span-3 space-y-4">
+          {/* Key Statistics */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <div className="grid grid-cols-2 gap-4">
+              <StatCard
+                title="Mean ALE"
+                value={statistics.mean}
+                description="Average outcome"
+                delay={0}
+              />
+              <StatCard
+                title="Median (P50)"
+                value={statistics.p50}
+                description="50th percentile"
+                delay={0.05}
+              />
+              <StatCard
+                title="Std Deviation"
+                value={statistics.stdDev}
+                description="Uncertainty measure"
+                delay={0.1}
+              />
+              <StatCard
+                title="P95 Worst Case"
+                value={statistics.p95}
+                description="95th percentile"
+                delay={0.15}
+              />
+            </div>
+          </motion.div>
+
+          {/* Charts */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="space-y-4"
+          >
+            {/* Histogram */}
+            <Card className="transition-smooth hover:shadow-lg cursor-pointer" onClick={() => handleChartClick('histogram')}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">ALE Distribution</CardTitle>
+                    <CardDescription className="text-xs">Frequency across simulations</CardDescription>
+                  </div>
+                  <Info className="h-4 w-4 opacity-50" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <Bar data={histogramChartData} options={histogramOptions} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Cumulative */}
+            <Card className="transition-smooth hover:shadow-lg cursor-pointer" onClick={() => handleChartClick('cumulative')}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">Cumulative Distribution</CardTitle>
+                    <CardDescription className="text-xs">Probability ≤ value</CardDescription>
+                  </div>
+                  <Info className="h-4 w-4 opacity-50" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <Line data={cumulativeChartData} options={cumulativeOptions} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Scatter */}
+            <Card className="transition-smooth hover:shadow-lg cursor-pointer" onClick={() => handleChartClick('scatter')}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">LEF vs Loss Magnitude</CardTitle>
+                    <CardDescription className="text-xs">Correlation analysis</CardDescription>
+                  </div>
+                  <Info className="h-4 w-4 opacity-50" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-64">
+                  <Scatter data={scatterChartData} options={scatterOptions} />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
       </div>
-
-      {/* Percentile Breakdown */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
-        whileHover={{ scale: 1.01 }}
-        onClick={() => handleChartClick('percentiles')}
-        className="cursor-pointer"
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Percentile Analysis</CardTitle>
-                <CardDescription>Statistical distribution of ALE outcomes</CardDescription>
-              </div>
-              <Info className="h-5 w-5 opacity-50" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-3 bg-green-500/10 rounded-lg">
-                <div className="text-xs text-muted-foreground mb-1">P5 (Best Case)</div>
-                <div className="text-lg font-bold text-green-600">{formatCurrency(statistics.p5)}</div>
-              </div>
-              <div className="p-3 bg-blue-500/10 rounded-lg">
-                <div className="text-xs text-muted-foreground mb-1">P25</div>
-                <div className="text-lg font-bold text-blue-600">{formatCurrency(statistics.p25)}</div>
-              </div>
-              <div className="p-3 bg-orange-500/10 rounded-lg">
-                <div className="text-xs text-muted-foreground mb-1">P75</div>
-                <div className="text-lg font-bold text-orange-600">{formatCurrency(statistics.p75)}</div>
-              </div>
-              <div className="p-3 bg-red-500/10 rounded-lg">
-                <div className="text-xs text-muted-foreground mb-1">P95 (Worst Case)</div>
-                <div className="text-lg font-bold text-red-600">{formatCurrency(statistics.p95)}</div>
-              </div>
-            </div>
-            <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-              <p className="text-sm">
-                <strong>90% Confidence Interval:</strong> {formatCurrency(statistics.p5)} - {formatCurrency(statistics.p95)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                There is a 90% probability that the actual ALE will fall within this range
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Histogram */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4, duration: 0.6 }}
-        whileHover={{ scale: 1.01 }}
-        onClick={() => handleChartClick('histogram')}
-        className="cursor-pointer"
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>ALE Distribution Histogram</CardTitle>
-                <CardDescription>Frequency of ALE values across 10,000 simulations</CardDescription>
-              </div>
-              <Info className="h-5 w-5 opacity-50" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-96">
-              <Bar data={histogramChartData} options={histogramOptions} />
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Cumulative Distribution */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5, duration: 0.6 }}
-        whileHover={{ scale: 1.01 }}
-        onClick={() => handleChartClick('cumulative')}
-        className="cursor-pointer"
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Cumulative Distribution Function (CDF)</CardTitle>
-                <CardDescription>Probability that ALE will be ≤ a given value</CardDescription>
-              </div>
-              <Info className="h-5 w-5 opacity-50" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-96">
-              <Line data={cumulativeChartData} options={cumulativeOptions} />
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Scatter Plot */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.6, duration: 0.6 }}
-        whileHover={{ scale: 1.01 }}
-        onClick={() => handleChartClick('scatter')}
-        className="cursor-pointer"
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>LEF vs Loss Magnitude Correlation</CardTitle>
-                <CardDescription>Relationship between frequency and magnitude (200 sample points)</CardDescription>
-              </div>
-              <Info className="h-5 w-5 opacity-50" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-96">
-              <Scatter data={scatterChartData} options={scatterOptions} />
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Simulation Methodology */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7, duration: 0.5 }}
-      >
-        <Card className="border-purple-500/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-purple-500" />
-              Simulation Methodology
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">Monte Carlo Approach</h4>
-              <p className="text-sm text-muted-foreground">
-                10,000 iterations randomly sampling from triangular distributions for both LEF (min: {data.lossEventFrequency.min}, 
-                most likely: {data.lossEventFrequency.mostLikely}, max: {data.lossEventFrequency.max}) and 
-                Loss Magnitude (min: {formatCurrency(data.lossMagnitude.total.min)}, 
-                most likely: {formatCurrency(data.lossMagnitude.total.mostLikely)}, 
-                max: {formatCurrency(data.lossMagnitude.total.max)}).
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Triangular Distribution Rationale</h4>
-              <p className="text-sm text-muted-foreground">
-                Triangular distributions are used when you have three-point estimates (min, most likely, max) but limited historical data. 
-                They're more realistic than uniform distributions (which assume all values are equally likely) and easier to parameterize 
-                than normal distributions (which require mean and standard deviation). The FAIR methodology recommends triangular distributions 
-                for cyber risk quantification when working with expert estimates rather than actuarial data.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Confidence Intervals</h4>
-              <p className="text-sm text-muted-foreground">
-                The 90% confidence interval ({formatCurrency(statistics.p5)} - {formatCurrency(statistics.p95)}) represents the range 
-                within which we expect the true ALE to fall 90% of the time. This wide range reflects the inherent uncertainty in estimating 
-                both the likelihood and impact of a sophisticated ransomware attack. Decision-makers should focus on the P50 (median) for 
-                planning purposes while preparing contingencies for the P90-P95 range.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
 
       {/* Detail Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>

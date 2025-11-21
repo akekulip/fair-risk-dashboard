@@ -102,15 +102,15 @@ export default function SummaryTab() {
     setDialogOpen(true);
   };
 
-  const MetricCard = ({ 
-    id, 
-    icon: Icon, 
-    title, 
-    value, 
-    subtext, 
-    badge, 
+  const MetricCard = ({
+    id,
+    icon: Icon,
+    title,
+    value,
+    subtext,
+    badge,
     colorClass = "risk-critical",
-    delay = 0 
+    delay = 0
   }: {
     id: string;
     icon: any;
@@ -125,25 +125,25 @@ export default function SummaryTab() {
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay, duration: 0.4 }}
-      whileHover={{ scale: 1.03, boxShadow: "0 10px 30px rgba(0,0,0,0.2)" }}
+      whileHover={{ y: -2 }}
       onClick={() => handleMetricClick(id)}
       className="cursor-pointer"
     >
-      <Card className="glass-effect relative">
-        <div className="absolute top-3 right-3">
-          <Info className="h-4 w-4 opacity-50" />
+      <Card className="glass-effect relative transition-smooth hover:shadow-lg">
+        <div className="absolute top-4 right-4">
+          <Info className="h-4 w-4 opacity-50 hover:opacity-100 transition-smooth" />
         </div>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-            <Icon className="h-4 w-4" />
+        <CardHeader className="pb-4">
+          <CardTitle className="metric-label flex items-center gap-2">
+            <Icon className="h-5 w-5" />
             {title}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className={`text-3xl font-bold ${colorClass}`}>
+        <CardContent className="space-y-3">
+          <div className={`metric-value ${colorClass}`}>
             {value}
           </div>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {subtext}
           </p>
           {badge}

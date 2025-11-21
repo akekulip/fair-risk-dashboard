@@ -68,7 +68,7 @@ export default function LossCurvesTab() {
   function triangularRandom(min: number, mode: number, max: number): number {
     const u = Math.random();
     const f = (mode - min) / (max - min);
-    
+
     if (u < f) {
       return min + Math.sqrt(u * (max - min) * (mode - min));
     } else {
@@ -89,14 +89,14 @@ export default function LossCurvesTab() {
         data.lossEventFrequency.mostLikely,
         data.lossEventFrequency.max
       );
-      
+
       // Loss Magnitude sample
       const loss = triangularRandom(
         data.lossMagnitude.total.min,
         data.lossMagnitude.total.mostLikely,
         data.lossMagnitude.total.max
       );
-      
+
       // ALE = LEF × Loss
       const ale = tef * loss;
       samples.push({ tef, loss, ale });
@@ -114,7 +114,7 @@ export default function LossCurvesTab() {
 
     const points = [];
     const total = simulationData.length;
-    
+
     // Sample every 100th point for performance
     for (let i = 0; i < total; i += 100) {
       const ale = simulationData[i].ale;
@@ -236,10 +236,10 @@ export default function LossCurvesTab() {
       },
       tooltip: {
         callbacks: {
-          title: function(context: any) {
+          title: function (context: any) {
             return `Loss: $${context[0].parsed.x.toFixed(2)}B`;
           },
-          label: function(context: any) {
+          label: function (context: any) {
             return `Probability of exceeding: ${context.parsed.y.toFixed(1)}%`;
           }
         }
@@ -304,10 +304,10 @@ export default function LossCurvesTab() {
       },
       tooltip: {
         callbacks: {
-          title: function(context: any) {
+          title: function (context: any) {
             return `Loss: $${context[0].label}B`;
           },
-          label: function(context: any) {
+          label: function (context: any) {
             return `Frequency: ${context.parsed.y} occurrences`;
           }
         }
@@ -385,7 +385,7 @@ export default function LossCurvesTab() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.6 }}
-        whileHover={{ scale: 1.01 }}
+        whileHover={{ opacity: 0.9 }}
         onClick={() => handleChartClick('percentiles')}
         className="cursor-pointer"
       >
@@ -447,7 +447,7 @@ export default function LossCurvesTab() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, duration: 0.6 }}
-        whileHover={{ scale: 1.01 }}
+        whileHover={{ opacity: 0.9 }}
         onClick={() => handleChartClick('exceedance')}
         className="cursor-pointer"
       >
@@ -467,8 +467,8 @@ export default function LossCurvesTab() {
             </div>
             <div className="mt-4 p-4 bg-red-500/10 rounded-lg border border-red-500/30">
               <p className="text-sm">
-                <strong>How to Read:</strong> Find a loss value on the x-axis, trace up to the curve, then left to the y-axis 
-                to see the probability of exceeding that loss. Example: There's a ~10% chance (y-axis) of losses exceeding 
+                <strong>How to Read:</strong> Find a loss value on the x-axis, trace up to the curve, then left to the y-axis
+                to see the probability of exceeding that loss. Example: There's a ~10% chance (y-axis) of losses exceeding
                 ${(percentiles.p90 / 1e9).toFixed(2)}B (x-axis).
               </p>
             </div>
@@ -481,7 +481,7 @@ export default function LossCurvesTab() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4, duration: 0.6 }}
-        whileHover={{ scale: 1.01 }}
+        whileHover={{ opacity: 0.9 }}
         onClick={() => handleChartClick('distribution')}
         className="cursor-pointer"
       >
@@ -501,8 +501,8 @@ export default function LossCurvesTab() {
             </div>
             <div className="mt-4 p-4 bg-blue-500/10 rounded-lg border border-blue-500/30">
               <p className="text-sm">
-                <strong>Distribution Characteristics:</strong> Right-skewed (long tail to the right) indicating asymmetric risk. 
-                Most outcomes cluster around $1-3B, but extreme scenarios can exceed $10B. The width reflects uncertainty in 
+                <strong>Distribution Characteristics:</strong> Right-skewed (long tail to the right) indicating asymmetric risk.
+                Most outcomes cluster around $1-3B, but extreme scenarios can exceed $10B. The width reflects uncertainty in
                 both attack frequency and impact magnitude.
               </p>
             </div>
@@ -527,24 +527,24 @@ export default function LossCurvesTab() {
             <div>
               <h4 className="font-semibold mb-2">For the Board of Directors</h4>
               <p className="text-sm text-muted-foreground">
-                "There is a 50% probability our annual cyber losses will exceed $2B, and a 10% probability they will exceed $3.8B. 
-                We recommend setting our risk appetite at the 90th percentile ($3.8B) and purchasing cyber insurance coverage up to 
+                "There is a 50% probability our annual cyber losses will exceed $2B, and a 10% probability they will exceed $3.8B.
+                We recommend setting our risk appetite at the 90th percentile ($3.8B) and purchasing cyber insurance coverage up to
                 the 99th percentile ($6.5B) to protect against catastrophic scenarios."
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-2">For the CFO</h4>
               <p className="text-sm text-muted-foreground">
-                "For financial planning purposes, we should reserve $2B (P50 median) for expected cyber risk costs. However, there's 
-                a 25% chance losses will exceed $2.5B (P75), so we recommend maintaining additional liquidity or insurance coverage 
+                "For financial planning purposes, we should reserve $2B (P50 median) for expected cyber risk costs. However, there's
+                a 25% chance losses will exceed $2.5B (P75), so we recommend maintaining additional liquidity or insurance coverage
                 to handle adverse scenarios without impacting operations."
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-2">For Risk Management</h4>
               <p className="text-sm text-muted-foreground">
-                "The wide distribution ($600M to $10B+) reflects significant uncertainty in both attack likelihood and impact. 
-                Investing $30M in the proposed security controls could reduce the P50 from $2.02B to $685M (66% reduction), 
+                "The wide distribution ($600M to $10B+) reflects significant uncertainty in both attack likelihood and impact.
+                Investing $30M in the proposed security controls could reduce the P50 from $2.02B to $685M (66% reduction),
                 delivering 45x ROI and narrowing the uncertainty range substantially."
               </p>
             </div>

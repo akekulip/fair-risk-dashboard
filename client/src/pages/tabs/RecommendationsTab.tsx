@@ -113,10 +113,10 @@ export default function RecommendationsTab() {
     setDialogOpen(true);
   };
 
-  const ActionCard = ({ 
-    id, 
-    title, 
-    delay = 0 
+  const ActionCard = ({
+    id,
+    title,
+    delay = 0
   }: {
     id: string;
     title: string;
@@ -126,7 +126,7 @@ export default function RecommendationsTab() {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay, duration: 0.5 }}
-      whileHover={{ scale: 1.02, x: 10 }}
+      whileHover={{ x: 4 }}
       onClick={() => handleActionClick(id)}
       className="cursor-pointer"
     >
@@ -189,7 +189,7 @@ export default function RecommendationsTab() {
                 </div>
               </motion.div>
             </div>
-            <motion.div 
+            <motion.div
               className="mt-6 p-4 bg-background rounded-lg border"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
