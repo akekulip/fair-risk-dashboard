@@ -261,20 +261,20 @@ export default function SimulationTab() {
     delay?: number;
   }) => (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4 }}
       key={value} // Re-animate on value change
     >
-      <Card className="glass-effect">
+      <Card className="glass-effect hover:shadow-professional transition-all duration-300 border-l-4 border-l-blue-500">
         <CardHeader className="pb-2">
-          <CardTitle className="metric-label">{title}</CardTitle>
+          <CardTitle className="metric-label text-xs uppercase tracking-wider text-muted-foreground">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="metric-value text-blue-600 dark:text-blue-400">
+          <div className="text-2xl font-bold text-foreground tracking-tight">
             <AnimatedCurrency value={value} duration={1.5} />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 mt-1">{description}</p>
         </CardContent>
       </Card>
     </motion.div>

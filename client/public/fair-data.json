@@ -24,17 +24,17 @@
         "description": "Campaigns per year"
       },
       "probabilityOfAction": {
-        "min": 0.40,
-        "mostLikely": 0.70,
-        "max": 0.90,
+        "min": 0.20,
+        "mostLikely": 0.27,
+        "max": 0.35,
         "description": "Probability of targeting Hyperion"
       }
     }
   },
   "susceptibility": {
-    "min": 0.15,
-    "mostLikely": 0.30,
-    "max": 0.50,
+    "min": 0.70,
+    "mostLikely": 0.80,
+    "max": 0.90,
     "unit": "probability",
     "description": "Probability of successful compromise per threat event",
     "threatCapability": {
@@ -47,18 +47,18 @@
       "antiForensics": 0.70
     },
     "resistanceStrength": {
-      "min": 0.50,
-      "mostLikely": 0.70,
-      "max": 0.85,
+      "min": 0.15,
+      "mostLikely": 0.20,
+      "max": 0.30,
       "preventive": 0.55,
       "detective": 0.60,
       "responsive": 0.78
     }
   },
   "lossEventFrequency": {
-    "min": 0.06,
-    "mostLikely": 1.16,
-    "max": 5.4,
+    "min": 0.14,
+    "mostLikely": 1.19,
+    "max": 3.78,
     "unit": "events/year",
     "description": "Expected successful attacks per year",
     "interpretation": "Approximately 1 successful attack per year"

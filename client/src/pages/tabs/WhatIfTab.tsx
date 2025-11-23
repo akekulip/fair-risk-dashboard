@@ -38,17 +38,19 @@ interface RiskMetrics {
 
 export default function WhatIfTab() {
   // Baseline values from current state
-  const baseline: ControlSettings = {
+  const defaultBaseline: ControlSettings = {
     mfaCoverage: 60,
     trainingEffectiveness: 30,
     iamTightening: 50,
     thirdPartyControls: 30,
   };
 
-  const [controls, setControls] = useState<ControlSettings>(baseline);
+  const [controls, setControls] = useState<ControlSettings>(defaultBaseline);
+  const [baseline, setBaseline] = useState<ControlSettings>(defaultBaseline);
   const [showComparison, setShowComparison] = useState(false);
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [fairData, setFairData] = useState<any>(null);
 
   // Scenario Management
   const { scenarios: savedScenarios, saveScenario, loadScenario, deleteScenario } = useScenarios();
@@ -56,15 +58,33 @@ export default function WhatIfTab() {
   const [loadDialogOpen, setLoadDialogOpen] = useState(false);
   const [newScenarioName, setNewScenarioName] = useState('');
 
-  // Baseline risk metrics
-  const baselineMetrics: RiskMetrics = {
-    vulnerability: 0.80, // 80% susceptibility
-    lef: 1.2, // 1.2 attacks/year with 80% success
-    ale: 2.038e9, // $2.038B
+  // Baseline risk metrics - loaded from fair-data.json
+  const [baselineMetrics, setBaselineMetrics] = useState<RiskMetrics>({
+    vulnerability: 0.80,
+    lef: 1.2,
+    ale: 2.02e9,
     investmentCost: 0,
     aleReduction: 0,
     roi: 0,
-  };
+  });
+
+  useEffect(() => {
+    fetch('/fair-data.json')
+      .then(res => res.json())
+      .then(data => {
+        setFairData(data);
+        // Update baseline metrics from data
+        setBaselineMetrics({
+          vulnerability: data.susceptibility.mostLikely,
+          lef: data.lossEventFrequency.mostLikely,
+          ale: data.annualizedLossExpectancy.mostLikely,
+          investmentCost: 0,
+          aleReduction: 0,
+          roi: 0,
+        });
+      })
+      .catch(console.error);
+  }, []);
 
   // Calculate risk metrics based on control settings
   const calculateMetrics = (settings: ControlSettings): RiskMetrics => {
@@ -84,21 +104,21 @@ export default function WhatIfTab() {
       thirdPartyResistance * 0.20
     );
 
-    // Threat capability remains constant at 0.75
-    const threatCapability = 0.75;
+    // Threat capability remains constant at 0.80 (from case study)
+    const threatCapability = 0.80;
 
     // Vulnerability = Threat Capability × (1 - Resistance Strength)
     // Higher resistance = lower vulnerability
     const vulnerability = threatCapability * (1 - overallResistance * 0.85); // Max 85% reduction
 
     // LEF = TEF × Vulnerability
-    // TEF is constant at 1.5 attacks/year
+    // TEF is constant at 1.5 attacks/year (derived from case study)
     const tef = 1.5;
     const lef = tef * vulnerability;
 
     // ALE = LEF × SLE
-    // SLE (Single Loss Expectancy) is constant at $1.7B
-    const sle = 1.74e9;
+    // SLE (Single Loss Expectancy) is constant at ~$1.7B (from case study)
+    const sle = 1.7e9;
     const ale = lef * sle;
 
     // Calculate investment cost based on control improvements
@@ -123,27 +143,27 @@ export default function WhatIfTab() {
     };
   };
 
-  const currentMetrics = useMemo(() => calculateMetrics(controls), [controls]);
+  const currentMetrics = useMemo(() => calculateMetrics(controls), [controls, baselineMetrics]);
 
-  // Predefined scenarios
+  // Predefined scenarios from Case Study
   const scenarios = {
-    quick_wins: {
-      name: "Quick Wins (3 months)",
-      description: "Deploy MFA to all accounts and enhance training",
-      settings: { ...baseline, mfaCoverage: 95, trainingEffectiveness: 50 },
-      cost: "$1.5M",
+    immediate: {
+      name: "Immediate Actions",
+      description: "MFA (FIDO2), Training, IAM tightening",
+      settings: { mfaCoverage: 95, trainingEffectiveness: 60, iamTightening: 70, thirdPartyControls: 60 },
+      cost: "$1.1M",
     },
-    comprehensive: {
-      name: "Comprehensive (6 months)",
-      description: "Full security program with all controls optimized",
-      settings: { mfaCoverage: 100, trainingEffectiveness: 70, iamTightening: 85, thirdPartyControls: 75 },
-      cost: "$5.5M",
+    shortTerm: {
+      name: "Short-Term Program",
+      description: "Resilience, UEBA, Backup Hardening",
+      settings: { mfaCoverage: 100, trainingEffectiveness: 80, iamTightening: 85, thirdPartyControls: 75 },
+      cost: "$7.5M",
     },
-    minimal: {
-      name: "Minimal Investment",
-      description: "Focus on highest-impact control (MFA only)",
-      settings: { ...baseline, mfaCoverage: 85 },
-      cost: "$625K",
+    longTerm: {
+      name: "Long-Term Transformation",
+      description: "Zero Trust, Vendor Ecosystem Hardening",
+      settings: { mfaCoverage: 100, trainingEffectiveness: 95, iamTightening: 95, thirdPartyControls: 95 },
+      cost: "$21.5M",
     },
   };
 
@@ -306,28 +326,31 @@ export default function WhatIfTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-purple-500/50">
+        <Card className="glass-effect border-purple-500/20 bg-gradient-to-r from-purple-500/5 to-transparent">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calculator className="h-5 w-5 text-purple-500" />
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 rounded-lg bg-purple-500/10">
+                <Calculator className="h-6 w-6 text-purple-500" />
+              </div>
               What-If Analysis: Risk Reduction Scenarios
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base ml-14">
               Adjust security controls to see real-time impact on risk metrics • Interactive ROI calculator
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm flex-wrap">
-              <Badge variant="outline" className="border-purple-500/50">
+          <CardContent className="ml-14">
+            <div className="flex items-center gap-3 text-sm flex-wrap">
+              <Badge variant="outline" className="border-purple-500/50 text-purple-500 bg-purple-500/5">
                 <Zap className="h-3 w-3 mr-1" />
                 Real-Time Calculation
               </Badge>
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground font-medium">
                 Adjust sliders to model security investment scenarios
               </span>
             </div>
@@ -341,16 +364,19 @@ export default function WhatIfTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.5 }}
       >
-        <Card>
+        <Card className="glass-effect border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-lg">Quick Scenarios</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Zap className="h-5 w-5 text-blue-500" />
+                Quick Scenarios
+              </CardTitle>
               <CardDescription>Pre-configured security investment scenarios</CardDescription>
             </div>
             <div className="flex gap-2">
               <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2 border-blue-500/20 hover:bg-blue-500/10">
                     <Save className="h-4 w-4" />
                     Save Current
                   </Button>
@@ -392,7 +418,7 @@ export default function WhatIfTab() {
 
               <Dialog open={loadDialogOpen} onOpenChange={setLoadDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
+                  <Button variant="outline" size="sm" className="gap-2 border-blue-500/20 hover:bg-blue-500/10">
                     <FolderOpen className="h-4 w-4" />
                     Load Saved
                   </Button>
@@ -447,23 +473,23 @@ export default function WhatIfTab() {
               {Object.entries(scenarios).map(([key, scenario]) => (
                 <motion.div
                   key={key}
-                  whileHover={{ y: -1 }}
+                  whileHover={{ y: -2 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <Button
                     variant="outline"
-                    className="w-full h-auto flex flex-col items-start p-4 gap-2"
+                    className="w-full h-auto flex flex-col items-start p-4 gap-2 border-blue-500/20 hover:bg-blue-500/5 hover:border-blue-500/50 transition-all"
                     onClick={() => handleScenario(key as keyof typeof scenarios)}
                   >
-                    <div className="font-semibold">{scenario.name}</div>
+                    <div className="font-semibold text-blue-600 dark:text-blue-400">{scenario.name}</div>
                     <div className="text-xs text-muted-foreground text-left">{scenario.description}</div>
-                    <Badge variant="secondary">{scenario.cost}</Badge>
+                    <Badge variant="secondary" className="bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20">{scenario.cost}</Badge>
                   </Button>
                 </motion.div>
               ))}
             </div>
             <div className="mt-4 flex justify-end">
-              <Button variant="ghost" size="sm" onClick={handleReset}>
+              <Button variant="ghost" size="sm" onClick={handleReset} className="text-muted-foreground hover:text-foreground">
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Reset to Baseline
               </Button>
@@ -478,9 +504,12 @@ export default function WhatIfTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <Card>
+        <Card className="glass-effect border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
           <CardHeader>
-            <CardTitle>Adjust Security Controls</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <Calculator className="h-5 w-5 text-purple-500" />
+              Adjust Security Controls
+            </CardTitle>
             <CardDescription>Move sliders to customize your security investment scenario</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -660,7 +689,7 @@ export default function WhatIfTab() {
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="bg-gradient-to-br from-green-500/10 to-blue-500/10 border-green-500/50">
+          <Card className="glass-effect border-green-500/20 bg-gradient-to-br from-green-500/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingDown className="h-5 w-5 text-green-500" />
@@ -670,40 +699,40 @@ export default function WhatIfTab() {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-4 bg-blue-500/20 rounded-lg">
+                <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   <div className="text-xs text-muted-foreground mb-1">Vulnerability</div>
-                  <div className="text-2xl font-bold text-blue-400">
+                  <div className="text-2xl font-bold text-blue-500 dark:text-blue-400">
                     {(currentMetrics.vulnerability * 100).toFixed(1)}%
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {showComparison && (
-                      <span className="text-green-400">
+                      <span className="text-green-600 dark:text-green-400">
                         ↓ {((baselineMetrics.vulnerability - currentMetrics.vulnerability) * 100).toFixed(1)}% reduction
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="p-4 bg-orange-500/20 rounded-lg">
+                <div className="p-4 bg-orange-500/10 rounded-lg border border-orange-500/20">
                   <div className="text-xs text-muted-foreground mb-1">Loss Event Frequency</div>
-                  <div className="text-2xl font-bold text-orange-400">
+                  <div className="text-2xl font-bold text-orange-500 dark:text-orange-400">
                     {currentMetrics.lef.toFixed(2)}/year
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {showComparison && (
-                      <span className="text-green-400">
+                      <span className="text-green-600 dark:text-green-400">
                         ↓ {((baselineMetrics.lef - currentMetrics.lef) / baselineMetrics.lef * 100).toFixed(0)}% reduction
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="p-4 bg-green-500/20 rounded-lg">
+                <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
                   <div className="text-xs text-muted-foreground mb-1">Annualized Loss Expectancy</div>
-                  <div className="text-2xl font-bold text-green-400">
+                  <div className="text-2xl font-bold text-green-500 dark:text-green-400">
                     <AnimatedCurrency value={currentMetrics.ale} duration={1} />
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {showComparison && (
-                      <span className="text-green-400">
+                      <span className="text-green-600 dark:text-green-400">
                         ↓ {((baselineMetrics.ale - currentMetrics.ale) / baselineMetrics.ale * 100).toFixed(0)}% reduction
                       </span>
                     )}
@@ -722,7 +751,7 @@ export default function WhatIfTab() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1, duration: 0.5 }}
         >
-          <Card className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/50">
+          <Card className="glass-effect border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5 text-purple-500" />
@@ -731,25 +760,25 @@ export default function WhatIfTab() {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-4 bg-purple-500/20 rounded-lg">
+                <div className="p-4 bg-purple-500/10 rounded-lg border border-purple-500/20">
                   <div className="text-xs text-muted-foreground mb-1">Investment Required</div>
-                  <div className="text-2xl font-bold text-purple-400">
+                  <div className="text-2xl font-bold text-purple-500 dark:text-purple-400">
                     <AnimatedCurrency value={currentMetrics.investmentCost} duration={1} />
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">One-time + annual costs</div>
                 </div>
-                <div className="p-4 bg-green-500/20 rounded-lg">
+                <div className="p-4 bg-green-500/10 rounded-lg border border-green-500/20">
                   <div className="text-xs text-muted-foreground mb-1">Annual Risk Reduction</div>
-                  <div className="text-2xl font-bold text-green-400">
+                  <div className="text-2xl font-bold text-green-500 dark:text-green-400">
                     <AnimatedCurrency value={currentMetrics.aleReduction} duration={1} />
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {((currentMetrics.aleReduction / baselineMetrics.ale) * 100).toFixed(0)}% ALE reduction
                   </div>
                 </div>
-                <div className="p-4 bg-yellow-500/20 rounded-lg">
+                <div className="p-4 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
                   <div className="text-xs text-muted-foreground mb-1">ROI Ratio</div>
-                  <div className="text-2xl font-bold text-yellow-400">
+                  <div className="text-2xl font-bold text-yellow-500 dark:text-yellow-400">
                     {currentMetrics.roi.toFixed(1)}x
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
@@ -757,7 +786,7 @@ export default function WhatIfTab() {
                   </div>
                 </div>
               </div>
-              <div className="mt-4 p-4 bg-green-500/10 rounded-lg border border-green-500/30">
+              <div className="mt-4 p-4 bg-green-500/5 rounded-lg border border-green-500/20">
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                   <div>
@@ -784,9 +813,12 @@ export default function WhatIfTab() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <Card>
+            <Card className="glass-effect border-red-500/20 bg-gradient-to-br from-red-500/5 to-transparent">
               <CardHeader>
-                <CardTitle>Risk Metrics: Before vs. After</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5 text-red-500" />
+                  Risk Metrics: Before vs. After
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
@@ -801,9 +833,12 @@ export default function WhatIfTab() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
           >
-            <Card>
+            <Card className="glass-effect border-green-500/20 bg-gradient-to-br from-green-500/5 to-transparent">
               <CardHeader>
-                <CardTitle>Control Effectiveness Improvement</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-green-500" />
+                  Control Effectiveness Improvement
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-80">

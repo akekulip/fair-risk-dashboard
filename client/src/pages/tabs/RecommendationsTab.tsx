@@ -130,7 +130,7 @@ export default function RecommendationsTab() {
       onClick={() => handleActionClick(id)}
       className="cursor-pointer"
     >
-      <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border border-muted hover:border-green-500/50 transition-all">
+      <div className="flex items-start gap-3 p-4 rounded-lg border border-muted/50 bg-card/50 hover:bg-card/80 hover:border-green-500/50 transition-all duration-300">
         <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
         <div className="flex-1">
           <p className="text-sm font-medium">{title}</p>
@@ -148,13 +148,15 @@ export default function RecommendationsTab() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-green-500/50 bg-green-500/5">
+        <Card className="glass-effect border-green-500/20 bg-gradient-to-r from-green-500/5 to-transparent">
           <CardHeader>
-            <CardTitle className="text-green-600 dark:text-green-400 flex items-center gap-2">
-              <Shield className="h-6 w-6" />
+            <CardTitle className="text-green-600 dark:text-green-400 flex items-center gap-3 text-2xl">
+              <div className="p-2 rounded-lg bg-green-500/10">
+                <Shield className="h-6 w-6" />
+              </div>
               Risk Treatment Program Overview
             </CardTitle>
-            <CardDescription>Comprehensive approach to reducing risk to acceptable levels • Click any action for details</CardDescription>
+            <CardDescription className="text-base ml-14">Comprehensive approach to reducing risk to acceptable levels • Click any action for details</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid md:grid-cols-3 gap-6">
@@ -209,21 +211,23 @@ export default function RecommendationsTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.6, duration: 0.6 }}
       >
-        <Card className="border-red-500/30">
+        <Card className="glass-effect border-red-500/20 bg-gradient-to-r from-red-500/5 to-transparent">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-red-600 dark:text-red-400" />
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 rounded-lg bg-red-500/10">
+                    <Calendar className="h-5 w-5 text-red-600 dark:text-red-400" />
+                  </div>
                   Immediate Actions (0-3 months)
                 </CardTitle>
-                <CardDescription>Highest priority, fastest ROI</CardDescription>
+                <CardDescription className="ml-12">Highest priority, fastest ROI</CardDescription>
               </div>
               <motion.div
                 animate={{ scale: [1, 1.1, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                <Badge variant="destructive">URGENT</Badge>
+                <Badge variant="destructive" className="text-sm px-3 py-1 shadow-lg shadow-red-500/20">URGENT</Badge>
               </motion.div>
             </div>
           </CardHeader>
@@ -265,17 +269,19 @@ export default function RecommendationsTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.9, duration: 0.6 }}
       >
-        <Card className="border-orange-500/30">
+        <Card className="glass-effect border-orange-500/20 bg-gradient-to-r from-orange-500/5 to-transparent">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 rounded-lg bg-orange-500/10">
+                    <TrendingUp className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  </div>
                   Short-Term Actions (3-12 months)
                 </CardTitle>
-                <CardDescription>Foundational security improvements</CardDescription>
+                <CardDescription className="ml-12">Foundational security improvements</CardDescription>
               </div>
-              <Badge variant="outline" className="border-orange-500/50">HIGH PRIORITY</Badge>
+              <Badge variant="outline" className="border-orange-500/50 text-orange-600 bg-orange-500/5">HIGH PRIORITY</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -314,17 +320,19 @@ export default function RecommendationsTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.05, duration: 0.6 }}
       >
-        <Card className="border-blue-500/30">
+        <Card className="glass-effect border-blue-500/20 bg-gradient-to-r from-blue-500/5 to-transparent">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="p-2 rounded-lg bg-blue-500/10">
+                    <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
                   Long-Term Actions (12+ months)
                 </CardTitle>
-                <CardDescription>Strategic architectural improvements</CardDescription>
+                <CardDescription className="ml-12">Strategic architectural improvements</CardDescription>
               </div>
-              <Badge variant="outline" className="border-blue-500/50">STRATEGIC</Badge>
+              <Badge variant="outline" className="border-blue-500/50 text-blue-600 bg-blue-500/5">STRATEGIC</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -362,9 +370,12 @@ export default function RecommendationsTab() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 0.5 }}
       >
-        <Card className="border-yellow-500/50 bg-yellow-500/5">
+        <Card className="glass-effect border-yellow-500/20 bg-gradient-to-r from-yellow-500/5 to-transparent">
           <CardHeader>
-            <CardTitle className="text-yellow-600 dark:text-yellow-400">Risk Acceptance Decision</CardTitle>
+            <CardTitle className="text-yellow-600 dark:text-yellow-400 flex items-center gap-2">
+              <Info className="h-5 w-5" />
+              Risk Acceptance Decision
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm leading-relaxed">

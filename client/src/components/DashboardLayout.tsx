@@ -19,7 +19,7 @@ export default function DashboardLayout({ children, activeTab = 'summary', onTab
   const { exportToPDF } = useExport();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-[hsl(var(--primary)/0.05)]">
+    <div className="min-h-screen bg-background dark:bg-background text-foreground transition-colors duration-300">
       {/* Header */}
       <header className="border-b border-[hsl(var(--border)/0.4)] bg-[hsl(var(--background)/0.95)] backdrop-blur supports-[backdrop-filter]:bg-[hsl(var(--background)/0.6)] sticky top-0 z-50 no-print">
         <div className="container mx-auto px-6 py-4">
@@ -34,16 +34,14 @@ export default function DashboardLayout({ children, activeTab = 'summary', onTab
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => exportToPDF('dashboard-content', 'fair-risk-report')}
-                data-export-trigger="true"
-                className="gap-2 hidden md:flex"
+              <a
+                href="https://akekudaga.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden md:inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-9 px-4 py-2"
               >
-                <Download className="h-4 w-4" />
-                Export PDF
-              </Button>
+                akekudaga.com
+              </a>
               <Button
                 variant="outline"
                 size="icon"
@@ -107,7 +105,7 @@ export default function DashboardLayout({ children, activeTab = 'summary', onTab
       <footer className="border-t border-border/40 mt-12">
         <div className="container mx-auto px-6 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2025 FAIR Risk Analysis Dashboard | Confidential - Board Level</p>
+            <p>Case Study by FAIR Institute | Solution by <a href="https://akekudaga.com" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors font-medium">Philip Akekudaga</a></p>
             <p>Analysis Date: November 7, 2025 | Time Horizon: 12 months</p>
           </div>
         </div>

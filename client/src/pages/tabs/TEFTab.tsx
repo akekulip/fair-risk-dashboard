@@ -204,28 +204,31 @@ export default function TEFTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-orange-500/50">
+        <Card className="glass-effect border-orange-500/20 bg-gradient-to-r from-orange-500/5 to-transparent">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Target className="h-5 w-5 text-orange-500" />
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 rounded-lg bg-orange-500/10">
+                <Target className="h-6 w-6 text-orange-500" />
+              </div>
               Threat Event Frequency (TEF) Analysis
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base ml-14">
               How often will Iron Vortex attempt to attack Hyperion? • Click any card for detailed analysis
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm">
-              <Badge variant="outline" className="border-orange-500/50">
+          <CardContent className="ml-14">
+            <div className="flex items-center gap-3 text-sm">
+              <Badge variant="outline" className="border-orange-500/50 text-orange-500 bg-orange-500/5">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Sophisticated Threat Actor
               </Badge>
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground font-medium">
                 Based on H-ISAC intelligence and industry benchmarks
               </span>
             </div>
@@ -359,6 +362,82 @@ export default function TEFTab() {
           </Card>
         </motion.div>
       </div>
+
+      {/* Threat Event Funnel Chart */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.45, duration: 0.6 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Threat Event Funnel</CardTitle>
+            <CardDescription>Visualizing the progression from reconnaissance to attack attempts</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <Bar
+                data={{
+                  labels: ['Contact Frequency (Attempts)', 'Actionable Events', 'Threat Events (Attacks)'],
+                  datasets: [
+                    {
+                      label: 'Most Likely Scenario',
+                      data: [
+                        tef.components.contactFrequency.mostLikely,
+                        tef.components.contactFrequency.mostLikely * tef.components.probabilityOfAction.mostLikely, // Intermediate step visualization
+                        tef.mostLikely
+                      ],
+                      backgroundColor: [
+                        'rgba(59, 130, 246, 0.6)', // Blue for Contact
+                        'rgba(249, 115, 22, 0.6)', // Orange for Actionable
+                        'rgba(239, 68, 68, 0.6)',  // Red for Threat Events
+                      ],
+                      borderColor: [
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(249, 115, 22, 1)',
+                        'rgba(239, 68, 68, 1)',
+                      ],
+                      borderWidth: 1,
+                      barPercentage: 0.6,
+                    }
+                  ]
+                }}
+                options={{
+                  indexAxis: 'y' as const,
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                      callbacks: {
+                        label: (context) => `${context.parsed.x.toFixed(2)} events/year`
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      title: { display: true, text: 'Frequency (Events/Year)', color: 'hsl(var(--foreground))' },
+                      ticks: { color: 'hsl(var(--foreground))' },
+                      grid: { color: 'hsl(var(--border))' }
+                    },
+                    y: {
+                      ticks: { color: 'hsl(var(--foreground))', font: { weight: 'bold' } },
+                      grid: { display: false }
+                    }
+                  }
+                }}
+              />
+            </div>
+            <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+              <p className="text-sm">
+                <strong>Funnel Analysis:</strong> Iron Vortex makes frequent contact (~{tef.components.contactFrequency.mostLikely}/year),
+                but only {(tef.components.probabilityOfAction.mostLikely * 100).toFixed(0)}% of these contacts escalate to full attacks.
+                This filtering effect results in the final Threat Event Frequency of {tef.mostLikely} attacks/year.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Component Breakdown Chart */}
       <motion.div

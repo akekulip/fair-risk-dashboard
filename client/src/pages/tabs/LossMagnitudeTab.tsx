@@ -243,7 +243,7 @@ export default function LossMagnitudeTab() {
           color: '#fff',
           font: {
             size: 11,
-            weight: '500' as const
+            weight: 'bold' as const
           },
           padding: 12,
           usePointStyle: true,
@@ -341,22 +341,22 @@ export default function LossMagnitudeTab() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
-      whileHover={{ y: -2 }}
+      whileHover={{ y: -5 }}
       onClick={() => handleComponentClick(id)}
       className="cursor-pointer"
     >
-      <Card className="relative">
+      <Card className="relative glass-effect border-red-500/20 bg-gradient-to-br from-red-500/5 to-transparent hover:bg-red-500/10 transition-colors duration-300">
         <div className="absolute top-3 right-3">
-          <Info className="h-4 w-4 opacity-50" />
+          <Info className="h-4 w-4 opacity-50 text-red-400" />
         </div>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm">{title}</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-500">
+          <div className="text-2xl font-bold text-red-500 dark:text-red-400">
             <AnimatedCurrency value={value} duration={2} />
           </div>
-          <p className="text-xs text-muted-foreground mt-1">{range}</p>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">{range}</p>
         </CardContent>
       </Card>
     </motion.div>
@@ -365,18 +365,21 @@ export default function LossMagnitudeTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card>
+        <Card className="glass-effect border-red-500/20 bg-gradient-to-r from-red-500/5 to-transparent">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 rounded-lg bg-red-500/10">
+                <DollarSign className="h-6 w-6 text-red-500" />
+              </div>
               Loss Magnitude Breakdown
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base ml-14">
               Detailed analysis of Primary and Secondary loss components • Click any component for details
             </CardDescription>
           </CardHeader>
@@ -414,9 +417,12 @@ export default function LossMagnitudeTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.4, duration: 0.6 }}
       >
-        <Card>
+        <Card className="glass-effect border-orange-500/20 bg-gradient-to-br from-orange-500/5 to-transparent">
           <CardHeader>
-            <CardTitle>Primary vs Secondary Loss Comparison</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingDown className="h-5 w-5 text-orange-500" />
+              Primary vs Secondary Loss Comparison
+            </CardTitle>
             <CardDescription>Immediate (Year 1) vs Extended (Years 2-3) impact</CardDescription>
           </CardHeader>
           <CardContent>
@@ -433,9 +439,12 @@ export default function LossMagnitudeTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5, duration: 0.6 }}
       >
-        <Card>
+        <Card className="glass-effect border-red-500/20 bg-gradient-to-br from-red-500/5 to-transparent">
           <CardHeader>
-            <CardTitle>Primary Loss Components (Year 1)</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5 text-red-500" />
+              Primary Loss Components (Year 1)
+            </CardTitle>
             <CardDescription>Immediate financial impact within the fiscal year of the breach</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -498,9 +507,12 @@ export default function LossMagnitudeTab() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.9, duration: 0.6 }}
       >
-        <Card>
+        <Card className="glass-effect border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
           <CardHeader>
-            <CardTitle>Secondary Loss Components (Years 2-3)</CardTitle>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingDown className="h-5 w-5 text-blue-500" />
+              Secondary Loss Components (Years 2-3)
+            </CardTitle>
             <CardDescription>Extended financial impact beyond the breach year</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -549,10 +561,10 @@ export default function LossMagnitudeTab() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1.2, duration: 0.5 }}
       >
-        <Card className="border-blue-500/30">
+        <Card className="glass-effect border-blue-500/30 bg-gradient-to-br from-blue-500/5 to-transparent">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ExternalLink className="h-5 w-5" />
+              <ExternalLink className="h-5 w-5 text-blue-500" />
               Industry Benchmarks & External Data Sources
             </CardTitle>
             <CardDescription>Loss magnitude estimates validated against industry research</CardDescription>

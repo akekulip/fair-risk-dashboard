@@ -1,9 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, TrendingDown, DollarSign, Calendar, Database, Shield, Info } from 'lucide-react';
+import { AlertTriangle, TrendingDown, DollarSign, Calendar, Database, Shield, Info, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { AnimatedCurrency } from '@/components/AnimatedCounter';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -45,6 +46,10 @@ export default function SummaryTab() {
   if (!data) {
     return <div className="flex items-center justify-center h-96">Loading...</div>;
   }
+
+  const handlePrint = () => {
+    window.print();
+  };
 
   const formatCurrency = (value: number) => {
     if (value >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
@@ -122,31 +127,37 @@ export default function SummaryTab() {
     delay?: number;
   }) => (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.4 }}
-      whileHover={{ y: -2 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5, ease: "easeOut" }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
       onClick={() => handleMetricClick(id)}
-      className="cursor-pointer"
+      className="cursor-pointer group"
     >
-      <Card className="glass-effect relative transition-smooth hover:shadow-lg">
-        <div className="absolute top-4 right-4">
-          <Info className="h-4 w-4 opacity-50 hover:opacity-100 transition-smooth" />
+      <Card className="glass-effect relative transition-all duration-300 hover:shadow-professional-lg border-t-4 border-t-transparent hover:border-t-primary/50 overflow-hidden">
+        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <Info className="h-5 w-5 text-muted-foreground/50" />
         </div>
-        <CardHeader className="pb-4">
-          <CardTitle className="metric-label flex items-center gap-2">
-            <Icon className="h-5 w-5" />
+        <div className="absolute -right-12 -top-12 h-24 w-24 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-2xl group-hover:scale-150 transition-transform duration-500" />
+
+        <CardHeader className="pb-2 relative z-10">
+          <CardTitle className="metric-label flex items-center gap-3 text-muted-foreground">
+            <div className={`p-2 rounded-lg bg-background/50 backdrop-blur-md shadow-sm ${colorClass.replace('text-', 'bg-').replace('600', '100').replace('400', '900/20')} bg-opacity-10`}>
+              <Icon className={`h-5 w-5 ${colorClass}`} />
+            </div>
             {title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
-          <div className={`metric-value ${colorClass}`}>
+        <CardContent className="space-y-4 relative z-10">
+          <div className={`metric-value ${colorClass} tracking-tight`}>
             {value}
           </div>
-          <p className="text-sm text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed font-medium">
             {subtext}
           </p>
-          {badge}
+          <div className="pt-2">
+            {badge}
+          </div>
         </CardContent>
       </Card>
     </motion.div>
@@ -157,19 +168,25 @@ export default function SummaryTab() {
       {/* Risk Level Banner */}
       <Card className="border-2" style={{ borderColor: 'hsla(0, 84.2%, 60.2%, 0.5)', backgroundColor: 'hsla(0, 84.2%, 60.2%, 0.05)' }}>
         <CardHeader>
-          <div className="flex items-center gap-3">
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
-            </motion.div>
-            <div>
-              <CardTitle className="text-2xl text-red-600 dark:text-red-400">CRITICAL RISK - EXISTENTIAL THREAT</CardTitle>
-              <CardDescription className="text-base mt-1">
-                Immediate executive attention and board-level action required • Click any metric for details
-              </CardDescription>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <motion.div
+                animate={{ scale: [1, 1.1, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+              </motion.div>
+              <div>
+                <CardTitle className="text-2xl text-red-600 dark:text-red-400">CRITICAL RISK - EXISTENTIAL THREAT</CardTitle>
+                <CardDescription className="text-base mt-1">
+                  Immediate executive attention and board-level action required • Click any metric for details
+                </CardDescription>
+              </div>
             </div>
+            <Button variant="outline" className="gap-2 hidden md:flex print:hidden" onClick={handlePrint}>
+              <Download className="h-4 w-4" />
+              Download Executive Report
+            </Button>
           </div>
         </CardHeader>
         <CardContent>

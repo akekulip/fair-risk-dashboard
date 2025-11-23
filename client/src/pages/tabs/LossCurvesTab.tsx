@@ -251,26 +251,26 @@ export default function LossCurvesTab() {
         title: {
           display: true,
           text: 'Annualized Loss Expectancy (Billions $)',
-          color: '#fff'
+          color: 'hsl(var(--foreground))'
         },
         ticks: {
-          color: '#fff'
+          color: 'hsl(var(--foreground))'
         },
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
+          color: 'hsl(var(--border))'
         }
       },
       y: {
         title: {
           display: true,
           text: 'Probability of Exceedance (%)',
-          color: '#fff'
+          color: 'hsl(var(--foreground))'
         },
         ticks: {
-          color: '#fff'
+          color: 'hsl(var(--foreground))'
         },
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
+          color: 'hsl(var(--border))'
         },
         min: 0,
         max: 100
@@ -318,27 +318,27 @@ export default function LossCurvesTab() {
         title: {
           display: true,
           text: 'Loss Magnitude (Billions $)',
-          color: '#fff'
+          color: 'hsl(var(--foreground))'
         },
         ticks: {
-          color: '#fff',
+          color: 'hsl(var(--foreground))',
           maxTicksLimit: 10
         },
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
+          color: 'hsl(var(--border))'
         }
       },
       y: {
         title: {
           display: true,
           text: 'Frequency',
-          color: '#fff'
+          color: 'hsl(var(--foreground))'
         },
         ticks: {
-          color: '#fff'
+          color: 'hsl(var(--foreground))'
         },
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)'
+          color: 'hsl(var(--border))'
         }
       }
     },
@@ -351,28 +351,31 @@ export default function LossCurvesTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="border-red-500/50">
+        <Card className="glass-effect border-red-500/20 bg-gradient-to-r from-red-500/5 to-transparent">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingDown className="h-5 w-5 text-red-500" />
+            <CardTitle className="flex items-center gap-3 text-2xl">
+              <div className="p-2 rounded-lg bg-red-500/10">
+                <TrendingDown className="h-6 w-6 text-red-500" />
+              </div>
               Loss Exceedance Analysis
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-base ml-14">
               Probability-based risk curves for executive decision-making • Click any chart for detailed explanation
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-sm">
-              <Badge variant="outline" className="border-red-500/50">
+          <CardContent className="ml-14">
+            <div className="flex items-center gap-3 text-sm">
+              <Badge variant="outline" className="border-red-500/50 text-red-500 bg-red-500/5">
                 <AlertTriangle className="h-3 w-3 mr-1" />
                 Critical Risk Communication Tool
               </Badge>
-              <span className="text-muted-foreground">
+              <span className="text-muted-foreground font-medium">
                 10,000 Monte Carlo iterations • 90% confidence intervals
               </span>
             </div>

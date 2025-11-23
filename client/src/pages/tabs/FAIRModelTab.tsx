@@ -34,11 +34,148 @@ interface ComponentData {
   borderColor: string;
 }
 
+// Workbook-style component box - Moved outside to prevent re-renders
+const WorkbookBox = ({
+  component,
+  delay = 0,
+  size = 'md',
+  onClick
+}: {
+  component: ComponentData;
+  delay?: number;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  onClick: (component: ComponentData) => void;
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const sizeClasses = {
+    sm: 'p-1.5',
+    md: 'p-3',
+    lg: 'p-4',
+    xl: 'p-5'
+  };
+
+  const titleSizes = {
+    sm: 'text-[10px]',
+    md: 'text-xs',
+    lg: 'text-sm',
+    xl: 'text-base'
+  };
+
+  const valueSizes = {
+    sm: 'text-[10px]',
+    md: 'text-xs',
+    lg: 'text-sm',
+    xl: 'text-base'
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.5, ease: "easeOut" }}
+      whileHover={{ y: -2, transition: { duration: 0.2 } }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      onClick={() => onClick(component)}
+      className="cursor-pointer group relative"
+    >
+      <Card className={`${component.color} border ${component.borderColor} relative overflow-hidden transition-all duration-300 hover:shadow-md backdrop-blur-sm w-full h-full`}>
+        {/* Animated background pulse */}
+        {isHovered && (
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          />
+        )}
+
+        <CardContent className={`${sizeClasses[size]} relative z-10 flex flex-col justify-between h-full`}>
+          {/* Header */}
+          <div className="flex items-center justify-between mb-1.5">
+            <div className={`font-bold ${titleSizes[size]} tracking-tight leading-tight truncate pr-1`}>
+              {component.name} <span className="text-muted-foreground font-normal opacity-75">({component.abbreviation})</span>
+            </div>
+            {size !== 'sm' && (
+              <motion.div
+                animate={isHovered ? { rotate: 360, scale: 1.1 } : { rotate: 0, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Info className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+              </motion.div>
+            )}
+          </div>
+
+          {/* Min/Avg/Max Grid */}
+          <div className="grid grid-cols-3 gap-1 mb-1.5">
+            <div>
+              <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-0.5 font-semibold text-center">Min</div>
+              <div className={`bg-background/40 backdrop-blur-md rounded px-1 py-0.5 text-center font-mono ${valueSizes[size]} border border-border/50 shadow-sm truncate`}>
+                {component.min}
+              </div>
+            </div>
+            <div>
+              <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-0.5 font-semibold text-center">Avg</div>
+              <div className={`bg-primary/10 backdrop-blur-md rounded px-1 py-0.5 text-center font-mono ${valueSizes[size]} font-bold border border-primary/50 shadow-sm truncate`}>
+                {component.average}
+              </div>
+            </div>
+            <div>
+              <div className="text-[8px] uppercase tracking-wider text-muted-foreground mb-0.5 font-semibold text-center">Max</div>
+              <div className={`bg-background/40 backdrop-blur-md rounded px-1 py-0.5 text-center font-mono ${valueSizes[size]} border border-border/50 shadow-sm truncate`}>
+                {component.max}
+              </div>
+            </div>
+          </div>
+
+          {/* Confidence */}
+          {size !== 'sm' && (
+            <div className="flex items-center justify-center gap-1.5 text-[10px]">
+              <span className="text-muted-foreground">Conf:</span>
+              <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-semibold bg-background/50 backdrop-blur-sm border border-border/50">
+                {component.confidence}
+              </Badge>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+};
+
+// Animated connector arrow
+const Arrow = ({ delay = 0, vertical = true }: { delay?: number, vertical?: boolean }) => (
+  <motion.div
+    className={`flex justify-center ${vertical ? 'my-1' : 'mx-1'}`}
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay }}
+  >
+    <motion.div
+      className="flex flex-col items-center"
+      animate={vertical ? { y: [0, 3, 0] } : { x: [0, 3, 0] }}
+      transition={{ duration: 1.5, repeat: Infinity, delay }}
+    >
+      {vertical ? (
+        <>
+          <div className="w-0.5 h-3 bg-gradient-to-b from-primary/50 to-primary"></div>
+          <div className="w-0 h-0 border-l-[4px] border-r-[4px] border-t-[6px] border-l-transparent border-r-transparent border-t-primary"></div>
+        </>
+      ) : (
+        <>
+          <div className="h-0.5 w-3 bg-gradient-to-r from-primary/50 to-primary"></div>
+          <div className="w-0 h-0 border-t-[4px] border-b-[4px] border-l-[6px] border-t-transparent border-b-transparent border-l-primary"></div>
+        </>
+      )}
+    </motion.div>
+  </motion.div>
+);
+
 export default function FAIRModelTab() {
   const [data, setData] = useState<FAIRData | null>(null);
   const [selectedComponent, setSelectedComponent] = useState<ComponentData | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/fair-data.json')
@@ -61,8 +198,9 @@ export default function FAIRModelTab() {
   }
 
   const formatCurrency = (val: number) => {
-    if (val >= 1e9) return `$${(val / 1e9).toFixed(2)}B`;
+    if (val >= 1e9) return `$${(val / 1e9).toFixed(1)}B`;
     if (val >= 1e6) return `$${(val / 1e6).toFixed(0)}M`;
+    if (val >= 1000) return `$${(val / 1000).toFixed(0)}k`;
     return `$${val.toLocaleString()}`;
   };
 
@@ -73,29 +211,29 @@ export default function FAIRModelTab() {
   const components: ComponentData[] = [
     {
       id: 'risk',
-      name: 'Risk (Loss Exposure)',
+      name: 'Risk (ALE)',
       abbreviation: 'ALE',
       min: formatCurrency(data.annualizedLossExpectancy.min),
       average: formatCurrency(data.annualizedLossExpectancy.mostLikely),
       max: formatCurrency(data.annualizedLossExpectancy.max),
-      confidence: 'Medium',
-      description: 'Annualized Loss Expectancy - probable frequency and magnitude of future loss',
+      confidence: 'Med',
+      description: 'Annualized Loss Expectancy',
       formula: 'Risk = LEF × LM',
-      rationale: 'Represents total cyber risk exposure from Iron Vortex ransomware attack over 12 months. Based on 10,000 Monte Carlo simulations combining loss event frequency and loss magnitude estimates.',
+      rationale: 'Total cyber risk exposure.',
       color: 'bg-red-500/10',
       borderColor: 'border-red-500'
     },
     {
       id: 'lef',
-      name: 'Loss Event Frequency',
+      name: 'Loss Event Freq',
       abbreviation: 'LEF',
       min: formatFrequency(data.lossEventFrequency.min),
       average: formatFrequency(data.lossEventFrequency.mostLikely),
       max: formatFrequency(data.lossEventFrequency.max),
-      confidence: 'Medium',
+      confidence: 'Med',
       description: 'Expected number of loss events per year',
-      formula: 'LEF = TEF × Vulnerability',
-      rationale: 'Calculated from threat event frequency (1.5/year) and vulnerability (80%). Represents approximately 1.2 successful breaches per year, or 96% probability of at least one breach within 12 months.',
+      formula: 'LEF = TEF × Vuln',
+      rationale: 'Frequency of successful breaches.',
       color: 'bg-orange-500/10',
       borderColor: 'border-orange-500'
     },
@@ -106,38 +244,38 @@ export default function FAIRModelTab() {
       min: formatCurrency(data.lossMagnitude.total.min),
       average: formatCurrency(data.lossMagnitude.total.mostLikely),
       max: formatCurrency(data.lossMagnitude.total.max),
-      confidence: 'Medium',
+      confidence: 'Med',
       description: 'Expected financial impact per loss event',
-      formula: 'LM = Primary Loss + Secondary Loss',
-      rationale: 'Aggregated from primary ($1.05B) and secondary ($690M) loss estimates. Exceptionally high due to permanent, irreversible nature of genomic data compromise.',
+      formula: 'LM = PL + SL',
+      rationale: 'Total financial impact.',
       color: 'bg-blue-500/10',
       borderColor: 'border-blue-500'
     },
     {
       id: 'tef',
-      name: 'Threat Event Frequency',
+      name: 'Threat Event Freq',
       abbreviation: 'TEF',
       min: formatFrequency(data.threatEventFrequency.min),
       average: formatFrequency(data.threatEventFrequency.mostLikely),
       max: formatFrequency(data.threatEventFrequency.max),
       confidence: 'High',
-      description: 'Expected number of threat actions per year',
+      description: 'Threat actions per year',
       formula: 'TEF = CF × PoA',
-      rationale: 'Based on Iron Vortex campaign frequency (5.5/year) and probability they target Hyperion (27%). H-ISAC intelligence shows 1.5 expected attacks annually.',
+      rationale: 'Frequency of attacks.',
       color: 'bg-cyan-500/10',
       borderColor: 'border-cyan-500'
     },
     {
       id: 'vuln',
-      name: 'Susceptibility (Vulnerability)',
-      abbreviation: 'Susc',
+      name: 'Vulnerability',
+      abbreviation: 'Vuln',
       min: formatPercent(data.susceptibility.min),
       average: formatPercent(data.susceptibility.mostLikely),
       max: formatPercent(data.susceptibility.max),
-      confidence: 'Medium',
-      description: 'Probability that threat event becomes loss event',
+      confidence: 'Med',
+      description: 'Probability of success',
       formula: 'Vuln = TCap × (1 - RS)',
-      rationale: '80% vulnerability from threat capability (75%) vs. resistance strength (20%). Critical gaps: legacy MFA, outdated training, IAM over-permissiveness, third-party risk.',
+      rationale: 'Likelihood of defense failure.',
       color: 'bg-pink-500/10',
       borderColor: 'border-pink-500'
     },
@@ -148,54 +286,12 @@ export default function FAIRModelTab() {
       min: formatCurrency(data.lossMagnitude.primary.min),
       average: formatCurrency(data.lossMagnitude.primary.mostLikely),
       max: formatCurrency(data.lossMagnitude.primary.max),
-      confidence: 'Medium',
-      description: 'Magnitude of primary losses per event',
+      confidence: 'Med',
+      description: 'Direct losses',
       formula: 'PL = ProdL + RespC + ReplC',
-      rationale: 'Primary loss magnitude ($1.322B) from direct incident impacts: productivity loss ($50M), response costs ($12M), replacement costs ($15M), plus regulatory fines ($870M), competitive advantage loss ($25M), and reputation damage ($350M). Medium confidence based on regulatory frameworks and industry benchmarks.',
+      rationale: 'Direct impact costs.',
       color: 'bg-green-600/10',
       borderColor: 'border-green-600'
-    },
-    {
-      id: 'prodl',
-      name: 'Productivity Loss',
-      abbreviation: 'ProdL',
-      min: formatCurrency(data.lossMagnitude.primary.components.productivity.min),
-      average: formatCurrency(data.lossMagnitude.primary.components.productivity.mostLikely),
-      max: formatCurrency(data.lossMagnitude.primary.components.productivity.max),
-      confidence: 'High',
-      description: 'Lost productivity during incident',
-      formula: 'Downtime × Revenue Rate',
-      rationale: 'Business interruption ($50M): 24-day average downtime (Verizon DBIR) × $2.1M daily revenue. HeliosAI platform unavailability prevents new patient onboarding and delays research partnerships.',
-      color: 'bg-green-300/10',
-      borderColor: 'border-green-300'
-    },
-    {
-      id: 'respc-primary',
-      name: 'Response Cost (Primary)',
-      abbreviation: 'RespC',
-      min: formatCurrency(data.lossMagnitude.primary.components.response.min),
-      average: formatCurrency(data.lossMagnitude.primary.components.response.mostLikely),
-      max: formatCurrency(data.lossMagnitude.primary.components.response.max),
-      confidence: 'High',
-      description: 'Immediate incident response costs',
-      formula: 'Forensics + Legal + PR + Notifications',
-      rationale: 'Incident response ($12M): forensic investigation ($3M), legal counsel ($2M), crisis PR ($1M), breach notifications ($4M for 130M records), credit monitoring ($2M). Based on IBM Cost of Breach 2024.',
-      color: 'bg-green-400/10',
-      borderColor: 'border-green-400'
-    },
-    {
-      id: 'replc',
-      name: 'Replacement Cost',
-      abbreviation: 'ReplC',
-      min: formatCurrency(data.lossMagnitude.primary.components.replacement.min),
-      average: formatCurrency(data.lossMagnitude.primary.components.replacement.mostLikely),
-      max: formatCurrency(data.lossMagnitude.primary.components.replacement.max),
-      confidence: 'Medium',
-      description: 'Asset replacement and recovery costs',
-      formula: 'System Rebuild + Data Restoration',
-      rationale: 'System rebuild and data restoration ($15M): AWS infrastructure rebuild ($5M), database restoration from backups ($8M), application redeployment ($2M). Assumes backups are intact and not compromised.',
-      color: 'bg-green-500/10',
-      borderColor: 'border-green-500'
     },
     {
       id: 'sl',
@@ -205,149 +301,191 @@ export default function FAIRModelTab() {
       average: formatCurrency(data.lossMagnitude.secondary.mostLikely),
       max: formatCurrency(data.lossMagnitude.secondary.max),
       confidence: 'Low',
-      description: 'Indirect costs following the loss event',
-      formula: 'SL = Reputation + Customer Churn + Insurance',
-      rationale: 'Includes customer churn ($500M - genetic data breach is unrecoverable), stock impact ($150M), insurance premium increase ($40M). Long-term reputation damage persists 2-3 years.',
+      description: 'Indirect losses',
+      formula: 'SL = Rep + Churn + Ins',
+      rationale: 'Indirect impact costs.',
       color: 'bg-purple-500/10',
       borderColor: 'border-purple-500'
     },
     {
       id: 'cf',
-      name: 'Contact Frequency',
+      name: 'Contact Freq',
       abbreviation: 'CF',
       min: formatFrequency(data.threatEventFrequency.components.contactFrequency.min),
       average: formatFrequency(data.threatEventFrequency.components.contactFrequency.mostLikely),
       max: formatFrequency(data.threatEventFrequency.components.contactFrequency.max),
       confidence: 'High',
-      description: 'How often threat actor acts against the organization',
-      formula: 'Estimated from threat intelligence',
-      rationale: 'Iron Vortex conducts 5.5 reconnaissance/targeting actions per year against genetic testing sector. Based on H-ISAC campaign tracking over 18 months.',
+      description: 'Contact Frequency',
+      formula: 'Intel',
+      rationale: 'Rate of contact.',
       color: 'bg-indigo-500/10',
       borderColor: 'border-indigo-500'
     },
     {
       id: 'poa',
-      name: 'Probability of Action',
+      name: 'Prob of Action',
       abbreviation: 'PoA',
       min: formatPercent(data.threatEventFrequency.components.probabilityOfAction.min),
       average: formatPercent(data.threatEventFrequency.components.probabilityOfAction.mostLikely),
       max: formatPercent(data.threatEventFrequency.components.probabilityOfAction.max),
-      confidence: 'Medium',
-      description: 'Probability that contact results in threat action',
-      formula: 'Estimated from targeting patterns',
-      rationale: '27% probability Hyperion is selected per campaign. High-value target: 130M genomic records, $2.4B revenue, multi-region AWS infrastructure. Iron Vortex breached 2 similar companies in 6 months.',
+      confidence: 'Med',
+      description: 'Probability of Action',
+      formula: 'Intel',
+      rationale: 'Likelihood of attack.',
       color: 'bg-violet-500/10',
       borderColor: 'border-violet-500'
     },
     {
       id: 'tcap',
-      name: 'Threat Capability',
+      name: 'Threat Cap',
       abbreviation: 'TCap',
       min: formatPercent(0.75),
       average: formatPercent(data.susceptibility.threatCapability.overall / 100),
       max: formatPercent(0.85),
       confidence: 'High',
-      description: 'Threat actor skill and resources',
-      formula: 'Assessed from threat intelligence',
-      rationale: '80th percentile threat capability. Iron Vortex demonstrates advanced persistent threat skills: custom malware, multi-stage attacks, cloud privilege escalation, sophisticated phishing.',
+      description: 'Threat Capability',
+      formula: 'Intel',
+      rationale: 'Attacker skill.',
       color: 'bg-red-400/10',
       borderColor: 'border-red-400'
     },
     {
       id: 'rs',
-      name: 'Resistance Strength',
+      name: 'Resistance',
       abbreviation: 'RS',
       min: formatPercent(data.susceptibility.resistanceStrength.min),
       average: formatPercent(data.susceptibility.resistanceStrength.mostLikely),
       max: formatPercent(data.susceptibility.resistanceStrength.max),
-      confidence: 'Medium',
-      description: 'Organization defensive capability',
-      formula: 'Assessed from control effectiveness',
-      rationale: '20% effective resistance despite strong foundation. Critical gaps: 60% MFA coverage (not phishing-resistant), 30% training effectiveness, cross-region IAM over-permissiveness, TestSure vendor risk.',
+      confidence: 'Med',
+      description: 'Resistance Strength',
+      formula: 'Controls',
+      rationale: 'Defense strength.',
       color: 'bg-yellow-500/10',
       borderColor: 'border-yellow-500'
     },
     {
+      id: 'prodl',
+      name: 'Productivity',
+      abbreviation: 'ProdL',
+      min: formatCurrency(data.lossMagnitude.primary.components.productivity.min),
+      average: formatCurrency(data.lossMagnitude.primary.components.productivity.mostLikely),
+      max: formatCurrency(data.lossMagnitude.primary.components.productivity.max),
+      confidence: 'High',
+      description: 'Productivity Loss',
+      formula: 'Downtime',
+      rationale: 'Lost work.',
+      color: 'bg-green-300/10',
+      borderColor: 'border-green-300'
+    },
+    {
+      id: 'respc-primary',
+      name: 'Response',
+      abbreviation: 'RespC',
+      min: formatCurrency(data.lossMagnitude.primary.components.response.min),
+      average: formatCurrency(data.lossMagnitude.primary.components.response.mostLikely),
+      max: formatCurrency(data.lossMagnitude.primary.components.response.max),
+      confidence: 'High',
+      description: 'Response Cost',
+      formula: 'IR',
+      rationale: 'Incident response.',
+      color: 'bg-green-400/10',
+      borderColor: 'border-green-400'
+    },
+    {
+      id: 'replc',
+      name: 'Replacement',
+      abbreviation: 'ReplC',
+      min: formatCurrency(data.lossMagnitude.primary.components.replacement.min),
+      average: formatCurrency(data.lossMagnitude.primary.components.replacement.mostLikely),
+      max: formatCurrency(data.lossMagnitude.primary.components.replacement.max),
+      confidence: 'Med',
+      description: 'Replacement Cost',
+      formula: 'Recovery',
+      rationale: 'Hardware/Software.',
+      color: 'bg-green-500/10',
+      borderColor: 'border-green-500'
+    },
+    {
       id: 'slef',
-      name: 'Secondary Loss Event Frequency',
+      name: 'Sec LEF',
       abbreviation: 'SLEF',
       min: formatFrequency(data.lossEventFrequency.min),
       average: formatFrequency(data.lossEventFrequency.mostLikely),
       max: formatFrequency(data.lossEventFrequency.max),
       confidence: 'Low',
-      description: 'Frequency of secondary loss events',
-      formula: 'SLEF = LEF (same as primary)',
-      rationale: 'Secondary losses occur with same frequency as primary losses. Every breach that causes primary loss also generates secondary impacts (reputation damage, customer churn, insurance increases).',
+      description: 'Secondary LEF',
+      formula: 'LEF',
+      rationale: 'Same as primary.',
       color: 'bg-purple-400/10',
       borderColor: 'border-purple-400'
     },
     {
       id: 'slm',
-      name: 'Secondary Loss Magnitude',
+      name: 'Sec LM',
       abbreviation: 'SLM',
       min: formatCurrency(data.lossMagnitude.secondary.min),
       average: formatCurrency(data.lossMagnitude.secondary.mostLikely),
       max: formatCurrency(data.lossMagnitude.secondary.max),
       confidence: 'Low',
-      description: 'Magnitude of secondary losses per event',
-      formula: 'SLM = RespC + CAdvL + FinJu + Reputation',
-      rationale: 'Secondary loss magnitude ($425M) from stakeholder reactions: response costs ($50M), competitive advantage loss ($75M), fines/judgments ($60M), reputation damage ($240M). Lower confidence due to difficulty predicting long-term market reactions.',
+      description: 'Secondary LM',
+      formula: 'Aggregated',
+      rationale: 'Total secondary.',
       color: 'bg-purple-600/10',
       borderColor: 'border-purple-600'
     },
     {
       id: 'respc',
-      name: 'Response Cost',
+      name: 'Sec Resp',
       abbreviation: 'RespC',
       min: formatCurrency(data.lossMagnitude.secondary.components.responseCost.min),
       average: formatCurrency(data.lossMagnitude.secondary.components.responseCost.mostLikely),
       max: formatCurrency(data.lossMagnitude.secondary.components.responseCost.max),
-      confidence: 'Medium',
-      description: 'Secondary response costs from stakeholder reactions',
-      formula: 'Estimated from post-breach requirements',
-      rationale: 'Post-breach security improvements ($50M): enhanced monitoring, additional security tools, third-party assessments, compliance audits. Required by regulators, insurers, and customers.',
+      confidence: 'Med',
+      description: 'Secondary Response',
+      formula: 'Legal/PR',
+      rationale: 'Post-breach.',
       color: 'bg-purple-300/10',
       borderColor: 'border-purple-300'
     },
     {
       id: 'cadvl',
-      name: 'Competitive Advantage Loss',
+      name: 'Comp Adv',
       abbreviation: 'CAdvL',
       min: formatCurrency(data.lossMagnitude.secondary.components.competitiveAdvantageLoss.min),
       average: formatCurrency(data.lossMagnitude.secondary.components.competitiveAdvantageLoss.mostLikely),
       max: formatCurrency(data.lossMagnitude.secondary.components.competitiveAdvantageLoss.max),
       confidence: 'Low',
-      description: 'Lost market position and competitive edge',
-      formula: 'Estimated from market impact',
-      rationale: 'Lost partnerships ($75M): R&D collaboration delays, cancelled strategic alliances, market share erosion to competitors. Genetic data breach creates permanent trust deficit in precision medicine market.',
+      description: 'Competitive Advantage',
+      formula: 'Market',
+      rationale: 'Market share.',
       color: 'bg-purple-400/10',
       borderColor: 'border-purple-400'
     },
     {
       id: 'finju',
-      name: 'Fines & Judgments',
+      name: 'Fines',
       abbreviation: 'FinJu',
       min: formatCurrency(data.lossMagnitude.secondary.components.finesJudgments.min),
       average: formatCurrency(data.lossMagnitude.secondary.components.finesJudgments.mostLikely),
       max: formatCurrency(data.lossMagnitude.secondary.components.finesJudgments.max),
-      confidence: 'Medium',
-      description: 'Secondary legal and financial penalties',
-      formula: 'Estimated from insurance and litigation',
-      rationale: 'Insurance premium increases ($60M over 3 years), civil litigation settlements beyond primary legal costs. Cyber insurance market will re-rate Hyperion as high-risk after genomic data breach.',
+      confidence: 'Med',
+      description: 'Fines & Judgments',
+      formula: 'Legal',
+      rationale: 'Penalties.',
       color: 'bg-purple-500/10',
       borderColor: 'border-purple-500'
     },
     {
       id: 'repd',
-      name: 'Reputation Damage',
+      name: 'Reputation',
       abbreviation: 'RepD',
       min: formatCurrency(data.lossMagnitude.secondary.components.reputationDamage.min),
       average: formatCurrency(data.lossMagnitude.secondary.components.reputationDamage.mostLikely),
       max: formatCurrency(data.lossMagnitude.secondary.components.reputationDamage.max),
       confidence: 'Low',
-      description: 'Long-term brand and reputation impact',
-      formula: 'Estimated from customer attrition',
-      rationale: 'Customer attrition and brand damage ($240M): Years 2-3 revenue loss, stock price impact, lost market valuation. Genetic data is irreplaceable - breach creates permanent loss of consumer trust.',
+      description: 'Reputation Damage',
+      formula: 'Churn',
+      rationale: 'Brand impact.',
       color: 'bg-purple-700/10',
       borderColor: 'border-purple-700'
     },
@@ -363,286 +501,96 @@ export default function FAIRModelTab() {
     setDialogOpen(true);
   };
 
-  // Workbook-style component box
-  const WorkbookBox = ({
-    component,
-    delay = 0,
-    size = 'md'
-  }: {
-    component: ComponentData;
-    delay?: number;
-    size?: 'sm' | 'md' | 'lg' | 'xl';
-  }) => {
-    const isHovered = hoveredId === component.id;
-
-    const sizeClasses = {
-      sm: 'p-3',
-      md: 'p-4',
-      lg: 'p-5',
-      xl: 'p-6'
-    };
-
-    const titleSizes = {
-      sm: 'text-xs',
-      md: 'text-sm',
-      lg: 'text-base',
-      xl: 'text-lg'
-    };
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay, duration: 0.4, ease: "easeOut" }}
-        whileHover={{ y: -2 }}
-        onHoverStart={() => setHoveredId(component.id)}
-        onHoverEnd={() => setHoveredId(null)}
-        onClick={() => handleClick(component)}
-        className="cursor-pointer"
-      >
-        <Card className={`${component.color} border-2 ${component.borderColor} relative overflow-hidden transition-smooth hover:shadow-lg`}>
-          {/* Animated background pulse */}
-          {isHovered && (
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-            />
-          )}
-
-          <CardContent className={`${sizeClasses[size]} relative z-10`}>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-3">
-              <div className={`font-bold ${titleSizes[size]}`}>
-                {component.name} ({component.abbreviation})
-              </div>
-              <motion.div
-                animate={isHovered ? { rotate: 360 } : { rotate: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Info className="h-4 w-4 opacity-50" />
-              </motion.div>
-            </div>
-
-            {/* Min/Avg/Max Grid */}
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              <div>
-                <div className="text-xs text-muted-foreground mb-1 font-semibold">Minimum</div>
-                <motion.div
-                  className="bg-background/60 backdrop-blur-sm rounded px-2 py-1.5 text-center font-mono text-sm border border-border/50"
-                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                >
-                  {component.min}
-                </motion.div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1 font-semibold">Average</div>
-                <motion.div
-                  className="bg-primary/20 backdrop-blur-sm rounded px-2 py-1.5 text-center font-mono text-sm font-bold border-2 border-primary/50"
-                  whileHover={{ borderColor: "rgba(59, 130, 246, 1)" }}
-                  animate={isHovered ? { scale: [1, 1.05, 1] } : {}}
-                  transition={{ duration: 0.5 }}
-                >
-                  {component.average}
-                </motion.div>
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground mb-1 font-semibold">Maximum</div>
-                <motion.div
-                  className="bg-background/60 backdrop-blur-sm rounded px-2 py-1.5 text-center font-mono text-sm border border-border/50"
-                  whileHover={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                >
-                  {component.max}
-                </motion.div>
-              </div>
-            </div>
-
-            {/* Confidence */}
-            <div className="text-xs text-center mb-2">
-              <span className="text-muted-foreground">Confidence:</span>{' '}
-              <span className="font-semibold">{component.confidence}</span>
-            </div>
-
-
-
-            {/* Hover indicator */}
-            <AnimatePresence>
-              {isHovered && (
-                <motion.div
-                  className="absolute bottom-2 right-2"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  exit={{ scale: 0, rotate: 180 }}
-                  transition={{ type: "spring", stiffness: 200 }}
-                >
-                  <Zap className="h-4 w-4 text-primary" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  };
-
-  // Animated connector arrow
-  const Arrow = ({ delay = 0 }: { delay?: number }) => (
-    <motion.div
-      className="flex justify-center my-3"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay }}
-    >
-      <motion.div
-        className="flex flex-col items-center"
-        animate={{ y: [0, 5, 0] }}
-        transition={{ duration: 1.5, repeat: Infinity, delay }}
-      >
-        <div className="w-0.5 h-6 bg-gradient-to-b from-primary/50 to-primary"></div>
-        <div className="w-0 h-0 border-l-[6px] border-r-[6px] border-t-[10px] border-l-transparent border-r-transparent border-t-primary"></div>
-      </motion.div>
-    </motion.div>
-  );
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <Card className="bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 border-primary/30">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Shield className="h-6 w-6 text-primary" />
-              </motion.div>
-              FAIR Model - Official Workbook Layout
-            </CardTitle>
-            <CardDescription>
-              Factor Analysis of Information Risk • Click any component for detailed information
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="outline" className="border-primary/50">
-                <Zap className="h-3 w-3 mr-1" />
-                Interactive Components
-              </Badge>
-              <Badge variant="outline" className="border-orange-500/50">
-                Monte Carlo Simulation (10,000 iterations)
-              </Badge>
-              <span className="text-xs text-muted-foreground">
-                Based on FAIR Institute standard taxonomy
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* FAIR Model Diagram */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="max-w-7xl mx-auto">
+    <div className="space-y-4">
+      {/* FAIR Model Diagram - Compact View */}
+      <Card className="border-none shadow-none bg-transparent">
+        <CardContent className="p-0">
+          <div className="w-full max-w-6xl mx-auto">
             {/* Level 1: Risk */}
-            <div className="mb-4">
-              <WorkbookBox component={componentMap.risk} delay={0} size="xl" />
+            <div className="flex justify-center mb-2">
+              <div className="w-64">
+                <WorkbookBox component={componentMap.risk} delay={0} size="md" onClick={handleClick} />
+              </div>
             </div>
 
             <Arrow delay={0.1} />
 
             {/* Level 2: LEF and LM */}
-            <div className="grid grid-cols-2 gap-6 mb-4">
-              <WorkbookBox component={componentMap.lef} delay={0.2} size="lg" />
-              <WorkbookBox component={componentMap.lm} delay={0.3} size="lg" />
+            <div className="flex justify-center gap-8 mb-2">
+              <div className="w-56">
+                <WorkbookBox component={componentMap.lef} delay={0.2} size="md" onClick={handleClick} />
+              </div>
+              <div className="w-56">
+                <WorkbookBox component={componentMap.lm} delay={0.3} size="md" onClick={handleClick} />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="flex justify-center gap-64 mb-2">
               <Arrow delay={0.4} />
               <Arrow delay={0.5} />
             </div>
 
             {/* Level 3: TEF, Vuln, PL, SL */}
-            <div className="grid grid-cols-4 gap-4 mb-4">
-              <WorkbookBox component={componentMap.tef} delay={0.6} />
-              <WorkbookBox component={componentMap.vuln} delay={0.7} />
-              <WorkbookBox component={componentMap.pl} delay={0.8} />
-              <WorkbookBox component={componentMap.sl} delay={0.9} />
-            </div>
-
-            <div className="grid grid-cols-4 gap-4">
-              <Arrow delay={1.0} />
-              <Arrow delay={1.1} />
-              <Arrow delay={1.15} />
-              <Arrow delay={1.17} />
-            </div>
-
-            {/* Level 4: CF, PoA, TCap, RS, PL sub-components, SL sub-components */}
-            <div className="grid grid-cols-9 gap-2 mb-4">
-              <WorkbookBox component={componentMap.cf} delay={1.2} size="sm" />
-              <WorkbookBox component={componentMap.poa} delay={1.3} size="sm" />
-              <WorkbookBox component={componentMap.tcap} delay={1.4} size="sm" />
-              <WorkbookBox component={componentMap.rs} delay={1.5} size="sm" />
-              <WorkbookBox component={componentMap.prodl} delay={1.55} size="sm" />
-              <WorkbookBox component={componentMap['respc-primary']} delay={1.6} size="sm" />
-              <WorkbookBox component={componentMap.replc} delay={1.65} size="sm" />
-              <WorkbookBox component={componentMap.slef} delay={1.7} size="sm" />
-              <WorkbookBox component={componentMap.slm} delay={1.75} size="sm" />
-            </div>
-
-            <div className="grid grid-cols-9 gap-2">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <Arrow delay={1.8} />
-            </div>
-
-            {/* Level 5: SLM Sub-components */}
-            <div className="grid grid-cols-9 gap-2">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div className="grid grid-cols-2 gap-2">
-                <WorkbookBox component={componentMap.respc} delay={1.9} size="sm" />
-                <WorkbookBox component={componentMap.cadvl} delay={2.0} size="sm" />
+            <div className="flex justify-center gap-4 mb-2">
+              <div className="w-40">
+                <WorkbookBox component={componentMap.tef} delay={0.6} size="sm" onClick={handleClick} />
+              </div>
+              <div className="w-40">
+                <WorkbookBox component={componentMap.vuln} delay={0.7} size="sm" onClick={handleClick} />
+              </div>
+              <div className="w-40">
+                <WorkbookBox component={componentMap.pl} delay={0.8} size="sm" onClick={handleClick} />
+              </div>
+              <div className="w-40">
+                <WorkbookBox component={componentMap.sl} delay={0.9} size="sm" onClick={handleClick} />
               </div>
             </div>
-            <div className="grid grid-cols-9 gap-2">
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div></div>
-              <div className="grid grid-cols-2 gap-2">
-                <WorkbookBox component={componentMap.finju} delay={2.1} size="sm" />
-                <WorkbookBox component={componentMap.repd} delay={2.2} size="sm" />
+
+            <div className="flex justify-center gap-4 mb-2">
+              <div className="w-40 flex justify-center"><Arrow delay={1.0} /></div>
+              <div className="w-40 flex justify-center"><Arrow delay={1.1} /></div>
+              <div className="w-40 flex justify-center"><Arrow delay={1.15} /></div>
+              <div className="w-40 flex justify-center"><Arrow delay={1.17} /></div>
+            </div>
+
+            {/* Level 4 & 5 Wrapper for alignment */}
+            <div className="w-fit mx-auto">
+              {/* Level 4: CF, PoA, TCap, RS, PL sub-components, SL sub-components */}
+              <div className="flex justify-center gap-2 mb-2">
+                <div className="w-28"><WorkbookBox component={componentMap.cf} delay={1.2} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap.poa} delay={1.3} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap.tcap} delay={1.4} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap.rs} delay={1.5} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap.prodl} delay={1.55} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap['respc-primary']} delay={1.6} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap.replc} delay={1.65} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap.slef} delay={1.7} size="sm" onClick={handleClick} /></div>
+                <div className="w-28"><WorkbookBox component={componentMap.slm} delay={1.75} size="sm" onClick={handleClick} /></div>
+              </div>
+
+              <div className="flex justify-end gap-2 mb-2 pr-[1.25rem]">
+                <div className="w-28 flex justify-center"><Arrow delay={1.8} /></div>
+              </div>
+
+              {/* Level 5: SLM Sub-components */}
+              <div className="flex justify-end gap-2">
+                <div className="w-56 flex flex-wrap justify-center gap-2">
+                  <div className="w-26"><WorkbookBox component={componentMap.respc} delay={1.9} size="sm" onClick={handleClick} /></div>
+                  <div className="w-26"><WorkbookBox component={componentMap.cadvl} delay={2.0} size="sm" onClick={handleClick} /></div>
+                  <div className="w-26"><WorkbookBox component={componentMap.finju} delay={2.1} size="sm" onClick={handleClick} /></div>
+                  <div className="w-26"><WorkbookBox component={componentMap.repd} delay={2.2} size="sm" onClick={handleClick} /></div>
+                </div>
               </div>
             </div>
+
           </div>
         </CardContent>
       </Card>
 
       {/* Component Detail Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto bg-white dark:bg-slate-950">
           <DialogHeader>
             <DialogTitle className="text-2xl">
               {selectedComponent?.name} ({selectedComponent?.abbreviation})
